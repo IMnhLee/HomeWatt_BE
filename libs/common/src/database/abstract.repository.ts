@@ -1,84 +1,116 @@
 import { Logger, NotFoundException } from '@nestjs/common';
-import {
-  FilterQuery,
-  Model,
-  Types,
-  UpdateQuery,
-  SaveOptions,
-  Connection,
-} from 'mongoose';
-import { AbstractDocument } from './abstract.schema';
+import { Repository, DeepPartial, FindOptionsWhere, FindManyOptions, FindOneOptions } from 'typeorm';
+import { BaseEntity } from './base.entity';
+import { IRepository } from './repository.interface';
+import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 
-export abstract class AbstractRepository<TDocument extends AbstractDocument> {
+export abstract class AbstractRepository<T extends BaseEntity> implements IRepository<T> {
   protected abstract readonly logger: Logger;
 
-  constructor(
-    protected readonly model: Model<TDocument>,
-    private readonly connection: Connection,
-  ) {}
+  constructor(protected readonly repository: Repository<T>) {}
 
-  async create(
-    document: Omit<TDocument, '_id'>,
-    options?: SaveOptions,
-  ) {
-    const createdDocument = new this.model({
-      ...document,
-      _id: new Types.ObjectId(),
-    });
-    if (!document) {
-      this.logger.warn('cant create document', document);
-      throw new NotFoundException('Document not found.');
+  async create(data: DeepPartial<T>): Promise<T> {
+    const entity = this.repository.create(data);
+    try {
+      const saved = await this.repository.save(entity);
+      this.logger.log(`Entity created with id: ${saved.id}`);
+      return saved;
+    } catch (error) {
+      this.logger.error(`Failed to create entity: ${error.message}`);
+      throw error;
     }
-    const newDoc = await createdDocument.save();
-    return newDoc;
   }
 
-  async findOne(filterQuery: FilterQuery<TDocument>): Promise<TDocument> {
-    const document = await this.model.findOne(filterQuery, {}, { lean: false });
-
-    if (!document) {
-      this.logger.warn('Document not found with filterQuery', filterQuery);
-      throw new NotFoundException('Document not found.');
+  async createMany(data: DeepPartial<T>[]): Promise<T[]> {
+    const entities = this.repository.create(data);
+    try {
+      const saved = await this.repository.save(entities);
+      this.logger.log(`Created ${saved.length} entities`);
+      return saved;
+    } catch (error) {
+      this.logger.error(`Failed to create entities: ${error.message}`);
+      throw error;
     }
-
-    return document;
   }
 
-  async findOneAndUpdate(
-    filterQuery: FilterQuery<TDocument>,
-    update: UpdateQuery<TDocument>,
-  ): Promise<TDocument> {
-    const document = await this.model.findOneAndUpdate(filterQuery, update, {
-      lean: false,
-      new: true,
+  async findOne(id: string): Promise<T> {
+    const entity = await this.repository.findOne({
+      where: { id } as FindOptionsWhere<T>
     });
 
-    if (!document) {
-      this.logger.warn(`Document not found with filterQuery:`, filterQuery);
-      throw new NotFoundException('Document not found.');
+    if (!entity) {
+      this.logger.warn(`Entity not found with id: ${id}`);
+      throw new NotFoundException('Entity not found');
     }
 
-    return document;
+    return entity;
   }
 
-  async upsert(
-    filterQuery: FilterQuery<TDocument>,
-    document: Partial<TDocument>,
-  ): Promise<TDocument> {
-    return this.model.findOneAndUpdate(filterQuery, document, {
-      lean: false,
-      upsert: true,
-      new: true,
+  async findOneBy(options: FindOneOptions<T>): Promise<T> {
+    const entity = await this.repository.findOne(options);
+    
+    if (!entity) {
+      this.logger.warn(`Entity not found with specified criteria`);
+      throw new NotFoundException('Entity not found');
+    }
+    
+    return entity;
+  }
+
+  async findAll(): Promise<T[]> {
+    return this.repository.find();
+  }
+
+  async findWithOptions(options: FindManyOptions<T>): Promise<T[]> {
+    return this.repository.find(options);
+  }
+
+  async count(options?: FindManyOptions<T>): Promise<number> {
+    return this.repository.count(options);
+  }
+
+  async update(id: string, data: QueryDeepPartialEntity<T>): Promise<T> {
+    try {
+      await this.repository.update(id, data);
+      return this.findOne(id);
+    } catch (error) {
+      this.logger.error(`Failed to update entity: ${error.message}`);
+      throw error;
+    }
+  }
+
+  async delete(id: string): Promise<boolean> {
+    try {
+      const result = await this.repository.delete(id);
+      return (result.affected ?? 0) > 0;
+    } catch (error) {
+      this.logger.error(`Failed to delete entity: ${error.message}`);
+      throw error;
+    }
+  }
+
+  async transaction<R>(operation: () => Promise<R>): Promise<R> {
+    const queryRunner = this.repository.manager.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const result = await operation();
+      await queryRunner.commitTransaction();
+      return result;
+    } catch (error) {
+      this.logger.error(`Transaction failed: ${error.message}`);
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async exists(id: string): Promise<boolean> {
+    const count = await this.repository.count({
+      where: { id } as FindOptionsWhere<T>
     });
-  }
-
-  async find(filterQuery: FilterQuery<TDocument>): Promise<TDocument[]> {
-    return this.model.find(filterQuery, {}, { lean: false });
-  }
-
-  async startTransaction() {
-    const session = await this.connection.startSession();
-    session.startTransaction();
-    return session;
+    return count > 0;
   }
 }
