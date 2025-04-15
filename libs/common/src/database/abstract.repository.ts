@@ -1,10 +1,10 @@
 import { Logger, NotFoundException } from '@nestjs/common';
 import { Repository, DeepPartial, FindOptionsWhere, FindManyOptions, FindOneOptions } from 'typeorm';
-import { BaseEntity } from './base.entity';
+import { AbstractEntity } from './abstract.entity';
 import { IRepository } from './repository.interface';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 
-export abstract class AbstractRepository<T extends BaseEntity> implements IRepository<T> {
+export abstract class AbstractRepository<T extends AbstractEntity> implements IRepository<T> {
   protected abstract readonly logger: Logger;
 
   constructor(protected readonly repository: Repository<T>) {}

@@ -1,6 +1,6 @@
 export * from './database/database.module';
 export * from './database/abstract.repository';
-export * from './database/base.entity';
+export * from './database/abstract.entity';
 export * from './database/repository.interface';
 export * from './rmq/rmq.module';
 export * from './rmq/rmq.service';
