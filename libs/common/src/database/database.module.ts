@@ -12,6 +12,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_NAME'),
+        dialect: configService.get<string>('DB_DIALECT'),
         autoLoadEntities: true,
         synchronize: true,
         logging: true,
