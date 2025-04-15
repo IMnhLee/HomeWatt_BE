@@ -1,23 +1,28 @@
-import { Column, ManyToOne } from "typeorm";
+import { Entity, Column, ManyToOne, JoinColumn, PrimaryColumn, CreateDateColumn } from "typeorm";
 import { User } from "./user.entity";
 import { UserGroup } from "./user_group.entity";
-import { AbstractEntity } from "@app/common";
 
-export class MemberGroup extends AbstractEntity {
-  @Column({ type: "varchar", nullable: false })
+@Entity()
+export class MemberGroup {
+  @PrimaryColumn({ name: "user_id" })
   userId: string;
 
-  @Column({ type: "varchar", nullable: false })
+  @PrimaryColumn({ name: "group_id" })
   groupId: string;
 
   @Column({ type: "varchar", default: "member" })
   role: string;
 
-  // Add relationship to User
-  @ManyToOne(() => User, user => user.memberGroups)
+  @CreateDateColumn()
+  joinedAt: Date;
+
+  // Định nghĩa mối quan hệ với User
+  @ManyToOne(() => User, user => user.memberGroups, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: "user_id" }) // Liên kết với cột userId
   user: User;
 
-  // Add relationship to UserGroup
-  @ManyToOne(() => UserGroup, group => group.memberGroups)
+  // Định nghĩa mối quan hệ với UserGroup
+  @ManyToOne(() => UserGroup, group => group.memberGroups, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: "group_id" }) // Liên kết với cột groupId
   group: UserGroup;
 }
