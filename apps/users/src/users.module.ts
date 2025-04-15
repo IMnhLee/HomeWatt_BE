@@ -22,7 +22,7 @@ import { MemberGroup } from './entities/member_group.entity';
         DB_PASSWORD: Joi.string().required(),
         DB_NAME: Joi.string().required(),
       }),
-      envFilePath: '.apps/users/.env',
+      envFilePath: './apps/users/.env',
     }),
     DatabaseModule,
     TypeOrmModule.forFeature([User, UserGroup, MemberGroup]),
