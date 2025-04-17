@@ -3,6 +3,9 @@ import { UserRepository } from './user.repository';
 import { CreateUserRequest } from './dto/createUser.request';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
+import { UserEmailParam } from './dto/userEmail.param';
+import { UserIdParam } from './dto/userId.param';
+import { UpdateUserRequest } from './dto/updateUser.request';
 
 @Injectable()
 export class UserService {
@@ -13,19 +16,19 @@ export class UserService {
     return this.userRepository.findAll();
   }
 
-  async findOneByEmail(email: string) {
+  async findOneByEmail(email: UserEmailParam) {
     try {
       this.logger.log(`Finding user by email: ${email}`);
-      return this.userRepository.findOneBy({where: { email }});
+      return this.userRepository.findOneBy({ where: email });
     }
     catch (error) {
       throw new NotFoundException('User not found.');
     }
   }
 
-  async findOneById(id: string) {
+  async findOneById(id: UserIdParam) {
     try {
-      return this.userRepository.findOneById(id);
+      return this.userRepository.findOneById(id.id);
     }
     catch (error) {
       throw new NotFoundException('User not found.');
@@ -49,9 +52,9 @@ export class UserService {
 
     return newUser;
   }
-  async update(id: string, data: any) {
+  async update(id: UserIdParam, data: UpdateUserRequest) {
     try {
-      return this.userRepository.update(id, data);
+      return this.userRepository.update(id.id, data);
     }
     catch (error) {
       throw new BadRequestException('Invalid data provided.');
