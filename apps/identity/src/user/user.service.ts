@@ -60,16 +60,13 @@ export class UserService {
       throw new BadRequestException('Invalid data provided.');
     }
   }
-  async delete(id: string) {
-    try {
-      const result = this.userRepository.delete(id);
-      if (!result) {
-        throw new NotFoundException('User not found.');
-      }
-      return result;
+  async delete(id: UserIdParam) {
+    const result = await this.userRepository.delete(id.id);
+    if (!result) {
+      throw new NotFoundException('User not found.');
     }
-    catch (error) {
-      throw new BadRequestException('failed to delete user.');
+    return {
+      message: 'User deleted successfully.',
     }
   }
 }
