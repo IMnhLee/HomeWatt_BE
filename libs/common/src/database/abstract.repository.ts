@@ -33,7 +33,7 @@ export abstract class AbstractRepository<T extends AbstractEntity> implements IR
     }
   }
 
-  async findOne(id: string): Promise<T> {
+  async findOneById(id: string): Promise<T> {
     const entity = await this.repository.findOne({
       where: { id } as FindOptionsWhere<T>
     });
@@ -72,7 +72,7 @@ export abstract class AbstractRepository<T extends AbstractEntity> implements IR
   async update(id: string, data: QueryDeepPartialEntity<T>): Promise<T> {
     try {
       await this.repository.update(id, data);
-      return this.findOne(id);
+      return this.findOneById(id);
     } catch (error) {
       this.logger.error(`Failed to update entity: ${error.message}`);
       throw error;

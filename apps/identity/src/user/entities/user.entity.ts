@@ -1,22 +1,22 @@
 import { AbstractEntity } from "@app/common";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { MemberGroup } from "./member_group.entity";
+import { MemberGroup } from "../../member_group/enitities/member_group.entity";
 
 @Entity()
 export class User extends AbstractEntity {
   @Column({ type: "varchar", unique: true, nullable: false })
   email: string;
 
-  @Column({ type: "varchar", nullable: false })
+  @Column({ type: "varchar", nullable: true })
   phoneNumber: string;
 
   @Column({ type: "varchar", nullable: false })
   password: string;
 
-  @Column()
+  @Column({ type: "varchar", nullable: false })
   username: string;
 
-  @Column()
+  @Column({ nullable: true })
   address: string;
 
   @Column({type: "varchar", nullable: true,})

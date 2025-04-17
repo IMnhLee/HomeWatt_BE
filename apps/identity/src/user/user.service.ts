@@ -1,0 +1,72 @@
+import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import { UserRepository } from './user.repository';
+import { CreateUserRequest } from './dto/createUser.request';
+import { User } from './entities/user.entity';
+import * as bcrypt from 'bcrypt';
+
+@Injectable()
+export class UserService {
+  private readonly logger = new Logger(UserService.name);
+  constructor(private readonly userRepository: UserRepository) {}
+
+  async findAll() {
+    return this.userRepository.findAll();
+  }
+
+  async findOneByEmail(email: string) {
+    try {
+      this.logger.log(`Finding user by email: ${email}`);
+      return this.userRepository.findOneBy({where: { email }});
+    }
+    catch (error) {
+      throw new NotFoundException('User not found.');
+    }
+  }
+
+  async findOneById(id: string) {
+    try {
+      return this.userRepository.findOneById(id);
+    }
+    catch (error) {
+      throw new NotFoundException('User not found.');
+    }
+  }
+  async create(request: CreateUserRequest) {
+    // kiểm tra email đã tồn tại chưa
+    let foundUser: User | null = null;
+    try {
+      foundUser = await this.userRepository.findOneBy({where: { email: request.email }});
+    }
+    catch (error) {}
+
+    if (foundUser) {
+      throw new ConflictException('Email already exists.');
+    }
+    const newUser = await this.userRepository.create({
+      ...request,
+      password: await bcrypt.hash(request.password, 10),
+    });
+
+    return newUser;
+  }
+  async update(id: string, data: any) {
+    try {
+      return this.userRepository.update(id, data);
+    }
+    catch (error) {
+      throw new BadRequestException('Invalid data provided.');
+    }
+  }
+  async delete(id: string) {
+    try {
+      const result = this.userRepository.delete(id);
+      if (!result) {
+        throw new NotFoundException('User not found.');
+      }
+      return result;
+    }
+    catch (error) {
+      throw new BadRequestException('failed to delete user.');
+    }
+  }
+}

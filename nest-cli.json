@@ -37,13 +37,13 @@
         "tsConfigPath": "libs/common/tsconfig.lib.json"
       }
     },
-    "users": {
+    "identity": {
       "type": "application",
-      "root": "apps/users",
+      "root": "apps/identity",
       "entryFile": "main",
-      "sourceRoot": "apps/users/src",
+      "sourceRoot": "apps/identity/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/users/tsconfig.app.json"
+        "tsConfigPath": "apps/identity/tsconfig.app.json"
       }
     }
   }

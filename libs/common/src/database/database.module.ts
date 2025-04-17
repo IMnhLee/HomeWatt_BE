@@ -15,7 +15,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         dialect: configService.get<string>('DB_DIALECT'),
         autoLoadEntities: true,
         synchronize: true,
-        logging: true,
+        logging: false,
       }),
       inject: [ConfigService],
     }),

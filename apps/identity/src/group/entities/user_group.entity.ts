@@ -1,6 +1,6 @@
 import { AbstractEntity } from "@app/common";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { MemberGroup } from "./member_group.entity";
+import { MemberGroup } from "../../member_group/enitities/member_group.entity";
 
 @Entity()
 export class UserGroup extends AbstractEntity {

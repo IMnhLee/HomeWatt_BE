@@ -5,8 +5,8 @@ import { Repository } from "typeorm";
 import { User } from "./entities/user.entity";
 
 @Injectable()
-export class UsersRepository extends AbstractRepository<User> {
-    protected readonly logger = new Logger(UsersRepository.name);
+export class UserRepository extends AbstractRepository<User> {
+    protected readonly logger = new Logger(UserRepository.name);
 
     constructor(
         @InjectRepository(User)

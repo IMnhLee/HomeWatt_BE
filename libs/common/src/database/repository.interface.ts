@@ -4,7 +4,7 @@ import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity
 export interface IRepository<T> {
     create(data: DeepPartial<T>): Promise<T>;
     createMany(data: DeepPartial<T>[]): Promise<T[]>;
-    findOne(id: string): Promise<T>;
+    findOneById(id: string): Promise<T>;
     findOneBy(options: any): Promise<T>;
     findAll(): Promise<T[]>;
     findWithOptions(options: any): Promise<T[]>;

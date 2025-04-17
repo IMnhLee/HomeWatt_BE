@@ -1,6 +1,6 @@
 import { Entity, Column, ManyToOne, JoinColumn, PrimaryColumn, CreateDateColumn } from "typeorm";
-import { User } from "./user.entity";
-import { UserGroup } from "./user_group.entity";
+import { User } from "../../user/entities/user.entity";
+import { UserGroup } from "../../group/entities/user_group.entity";
 
 @Entity()
 export class MemberGroup {
