@@ -5,13 +5,13 @@ import { Repository } from "typeorm";
 import { UserGroup } from "./entities/user_group.entity";
 
 @Injectable()
-export class UserGroupRepository extends AbstractRepository<UserGroup> {
-    protected readonly logger = new Logger(UserGroupRepository.name);
+export class GroupRepository extends AbstractRepository<UserGroup> {
+    protected readonly logger = new Logger(GroupRepository.name);
 
     constructor(
         @InjectRepository(UserGroup)
-        private readonly userGroupRepository: Repository<UserGroup>
+        private readonly groupRepository: Repository<UserGroup>
     ) {
-        super(userGroupRepository);
+        super(groupRepository);
     }
 }
