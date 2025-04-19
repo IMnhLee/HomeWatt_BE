@@ -33,10 +33,12 @@ export abstract class AbstractRepository<T extends AbstractEntity> implements IR
     }
   }
 
-  async findOneById(id: string): Promise<T> {
-    const entity = await this.repository.findOne({
-      where: { id } as FindOptionsWhere<T>
-    });
+  async findOneById(id: string, options?: FindOneOptions<T>): Promise<T> {
+    const findOptions: FindOneOptions<T> = {
+      where: { id } as FindOptionsWhere<T>,
+      ...options,
+    };
+    const entity = await this.repository.findOne(findOptions);
 
     if (!entity) {
       this.logger.warn(`Entity not found with id: ${id}`);
@@ -82,6 +84,7 @@ export abstract class AbstractRepository<T extends AbstractEntity> implements IR
   async delete(id: string): Promise<boolean> {
     try {
       const result = await this.repository.delete(id);
+      // console.log(JSON.stringify({result}, null, 2));
       return (result.affected ?? 0) > 0;
     } catch (error) {
       this.logger.error(`Failed to delete entity: ${error.message}`);
