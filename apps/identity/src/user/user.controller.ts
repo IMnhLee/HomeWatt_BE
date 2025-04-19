@@ -4,6 +4,8 @@ import { CreateUserRequest } from './dto/createUser.request';
 import { UserEmailParam } from './dto/userEmail.param';
 import { UserIdParam } from './dto/userId.param';
 import { UpdateUserRequest } from './dto/updateUser.request';
+import { UserInfoResponse } from './dto/userInfo.response';
+import { plainToInstance } from 'class-transformer';
 
 @Controller('user')
 // @UsePipes(new ValidationPipe({ transform: true }))
@@ -12,26 +14,32 @@ export class UserController {
 
   @Get()
   async getAllUsers() {
-    return this.userService.findAll();
+    const users = await this.userService.findAll();
+    return plainToInstance(UserInfoResponse, users);
   }
 
   @Get(':id')
   async getUserById(@Param() id: UserIdParam) {
-    return this.userService.findOneById(id);
+    const user = await this.userService.findOneById(id);
+    return plainToInstance(UserInfoResponse, user);
+
   }
 
   @Get('email/:email')
   async getUserByEmail(@Param() email: UserEmailParam) {
-    return this.userService.findOneByEmail(email);
+    const user = await this.userService.findOneByEmail(email);
+    return plainToInstance(UserInfoResponse, user);
   }
   @Post('create')
   async createUser(@Body() request: CreateUserRequest) {
-    return this.userService.create(request);
+    const user = await this.userService.create(request);
+    return plainToInstance(UserInfoResponse, user);
   }
   
   @Put(':id')
   async updateUser(@Param() id: UserIdParam, @Body() request: UpdateUserRequest) {
-    return this.userService.update(id, request);
+    const user = await this.userService.update(id, request);
+    return plainToInstance(UserInfoResponse, user);
   }
 
   @Delete(':id')
