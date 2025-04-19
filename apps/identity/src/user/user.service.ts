@@ -14,6 +14,10 @@ export class UserService {
 
   async findAll() {
     return this.userRepository.findAll();
+    // return result.map((user) => {
+    //   const { password, ...userWithoutPassword } = user;
+    //   return userWithoutPassword;
+    // });
   }
 
   async findOneByEmail(email: UserEmailParam) {
@@ -31,9 +35,11 @@ export class UserService {
       return this.userRepository.findOneById(id.id);
     }
     catch (error) {
+      console.log(error);
       throw new NotFoundException('User not found.');
     }
   }
+
   async create(request: CreateUserRequest) {
     // kiểm tra email đã tồn tại chưa
     let foundUser: User | null = null;
@@ -55,7 +61,7 @@ export class UserService {
   async update(id: UserIdParam, data: UpdateUserRequest) {
     try {
       return this.userRepository.update(id.id, data);
-    }
+  }
     catch (error) {
       throw new BadRequestException('Invalid data provided.');
     }
@@ -69,4 +75,16 @@ export class UserService {
       message: 'User deleted successfully.',
     }
   }
+
+  // async getAllGroupOfUser(id: UserIdParam) {
+  //   try {
+  //     const user = await this.userRepository.findOneById(id.id, { relations: ['groups'] });
+  //     if (!user) {
+  //       throw new NotFoundException('User not found.');
+  //     }
+  //     return user.groups;
+  //   } catch (error) {
+  //     throw new UnprocessableEntityException('Failed to get groups of user.');
+  //   }
+  // }
 }
