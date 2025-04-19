@@ -1,6 +1,6 @@
 import { AbstractEntity } from "@app/common";
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { MemberGroup } from "../../member_group/enitities/member_group.entity";
+import { Column, Entity, OneToMany } from "typeorm";
+import { MemberGroup } from "../../member_group/enities/member_group.entity";
 
 @Entity()
 export class UserGroup extends AbstractEntity {
@@ -11,5 +11,5 @@ export class UserGroup extends AbstractEntity {
   description: string;
 
   @OneToMany(() => MemberGroup, memberGroup => memberGroup.group)
-  memberGroups: MemberGroup[];
+  members: MemberGroup[];
 }
