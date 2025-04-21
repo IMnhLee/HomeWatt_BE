@@ -76,6 +76,14 @@ export class UserService {
     }
   }
 
+  async validatePassword(user: User, password: string) {
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      throw new BadRequestException('Invalid password.');
+    }
+    return true;
+  }
+
   // async getAllGroupOfUser(id: UserIdParam) {
   //   try {
   //     const user = await this.userRepository.findOneById(id.id, { relations: ['groups'] });
