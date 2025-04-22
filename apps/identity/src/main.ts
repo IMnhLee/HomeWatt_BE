@@ -1,23 +1,19 @@
 import { NestFactory } from '@nestjs/core';
 import { IdentityModule } from './identity.module';
-import { ConfigService } from '@nestjs/config';
-import { ValidationPipe } from '@nestjs/common';
-import { RmqService } from '@app/common';
-import { MicroserviceOptions } from '@nestjs/microservices';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { join } from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(IdentityModule);
-  app.useGlobalPipes(new ValidationPipe({ transform: true }));
-  
-  const configService = app.get(ConfigService);
-  const rmqService = app.get<RmqService>(RmqService);
-  
-  // Set up as microservice
-  app.connectMicroservice<MicroserviceOptions>(
-    rmqService.getOptions('IDENTITY', true)
+  const app = await NestFactory.createMicroservice<MicroserviceOptions>(
+    IdentityModule,
+    {
+      transport: Transport.GRPC,
+      options: {
+        protoPath: join(__dirname, '../user.proto'),
+        package: 'user',
+      },
+    },
   );
-  
-  await app.startAllMicroservices();
-  await app.listen(configService.get('PORT') ?? 3000);
+  await app.listen();
 }
 bootstrap();

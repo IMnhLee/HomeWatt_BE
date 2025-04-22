@@ -1,108 +1,110 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Controller } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserRequest } from './dto/createUser.request';
-import { UserEmailParam } from './dto/userEmail.param';
-import { UserIdParam } from './dto/userId.param';
-import { UpdateUserRequest } from './dto/updateUser.request';
-import { UserInfoResponse } from './dto/userInfo.response';
-import { plainToInstance } from 'class-transformer';
-import { RmqService } from '@app/common';
-import { Ctx, MessagePattern, Payload, RmqContext } from '@nestjs/microservices';
+import { UserServiceController, UserIdRequest, UserEmailRequest, CreateUserRequest, UpdateUserRequest, UserResponse, UsersResponse, UserServiceControllerMethods, DeleteResponse, ValidateUserResponse} from '@app/common';
 
 @Controller('user')
+@UserServiceControllerMethods()
 // @UsePipes(new ValidationPipe({ transform: true }))
-export class UserController {
+export class UserController implements UserServiceController {
   constructor(
     private readonly userService: UserService,
-    private readonly rmqService: RmqService
   ) {}
 
-  @Get()
-  async getAllUsers() {
+  async getAllUsers(): Promise<UsersResponse> {
     const users = await this.userService.findAll();
-    return plainToInstance(UserInfoResponse, users);
+    return { 
+      users: users.map(({ password, ...user }) => ({
+      ...user,
+      createdAt: user.createdAt ? user.createdAt.toISOString() : '',
+      updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
+      }))
+    };
   }
 
-  @Get(':id')
-  async getUserById(@Param() id: UserIdParam) {
+  async getUserById( id: UserIdRequest): Promise<UserResponse> {
     const user = await this.userService.findOneById(id);
-    return plainToInstance(UserInfoResponse, user);
-
+    const { password, ...userWithoutPassword } = user;
+    return { 
+      user: {
+      ...userWithoutPassword,
+      createdAt: user.createdAt ? user.createdAt.toISOString() : '',
+      updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
+      } 
+    };
   }
 
-  @Get('email/:email')
-  async getUserByEmail(@Param() email: UserEmailParam) {
+  async getUserByEmail(email: UserEmailRequest) {
     const user = await this.userService.findOneByEmail(email);
-    return plainToInstance(UserInfoResponse, user);
+    const { password, ...userWithoutPassword } = user;
+    return { 
+      user: {
+      ...userWithoutPassword,
+      createdAt: user.createdAt ? user.createdAt.toISOString() : '',
+      updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
+      } 
+    };
   }
-  @Post('create')
-  async createUser(@Body() request: CreateUserRequest) {
+  async createUser(request: CreateUserRequest): Promise<UserResponse> {
     const user = await this.userService.create(request);
-    return plainToInstance(UserInfoResponse, user);
+    const { password, ...userWithoutPassword } = user;
+    return { 
+      user: {
+      ...userWithoutPassword,
+      createdAt: user.createdAt ? user.createdAt.toISOString() : '',
+      updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
+      } 
+    };
   }
   
-  @Put(':id')
-  async updateUser(@Param() id: UserIdParam, @Body() request: UpdateUserRequest) {
-    const user = await this.userService.update(id, request);
-    return plainToInstance(UserInfoResponse, user);
+  async updateUser(request: UpdateUserRequest): Promise<UserResponse> {
+    const user = await this.userService.update(request);
+    const { password, ...userWithoutPassword } = user;
+    return { 
+      user: {
+      ...userWithoutPassword,
+      createdAt: user.createdAt ? user.createdAt.toISOString() : '',
+      updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
+      } 
+    };
   }
 
-  @Delete(':id')
-  async deleteUser(@Param() id: UserIdParam) {
+  async deleteUser(id: UserIdRequest): Promise<DeleteResponse> {
     return this.userService.delete(id);
   }
 
-  @MessagePattern('validate_user')
-  async validateUser(
-    @Payload() data: { email: string; password: string },
-    @Ctx() context: RmqContext,
-  ) {
-    const { email, password } = data;
+  async validateUser({ email, password }): Promise<ValidateUserResponse> {
     try {
-      const user = await this.userService.findOneByEmail({ email });
-      // if (!user) return null;
+      const user = await this.userService.findOneByEmail(email);
+      if (!user)
+        return {
+          isValid: false,
+          message: 'User not found',
+        }
       
       const isPasswordValid = await this.userService.validatePassword(user, password);
-      if (!isPasswordValid) return null;
+      if (!isPasswordValid)
+        return {
+          isValid: false,
+          message: 'Invalid password',
+        }
       
-      const { password: _, ...result } = user;
-      this.rmqService.ack(context);
-      return result;
+      // Loại bỏ password
+      const { password: _, ...userWithoutPassword } = user;
+      return {
+        isValid: true,
+        user: {
+        ...userWithoutPassword,
+        createdAt: user.createdAt ? user.createdAt.toISOString() : '',
+        updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
+        },
+        message: 'User is valid',
+      };
     } catch (error) {
-      this.rmqService.ack(context);
-      return null;
-    }
-  }
-
-  @MessagePattern('find_user_by_id')
-  async findUserById(
-    @Payload() userId: string,
-    @Ctx() context: RmqContext,
-  ) {
-    try {
-      const user = await this.userService.findOneById({ id: userId });
-      const { password: _, ...result } = user;
-      this.rmqService.ack(context);
-      return result;
-    } catch (error) {
-      this.rmqService.ack(context);
-      return null;
-    }
-  }
-
-  @MessagePattern('find_user_by_email')
-  async findUserByEmail(
-    @Payload() email: string,
-    @Ctx() context: RmqContext,
-  ) {
-    try {
-      const user = await this.userService.findOneByEmail({ email });
-      const { password: _, ...result } = user;
-      this.rmqService.ack(context);
-      return result;
-    } catch (error) {
-      this.rmqService.ack(context);
-      return null;
+      console.error('Error validating user:', error);
+      return {
+        isValid: false,
+        message: 'An error occurred while validating the user',
+      };
     }
   }
 }

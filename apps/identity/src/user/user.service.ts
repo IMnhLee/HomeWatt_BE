@@ -1,11 +1,9 @@
 import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { UserRepository } from './user.repository';
-import { CreateUserRequest } from './dto/createUser.request';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
-import { UserEmailParam } from './dto/userEmail.param';
-import { UserIdParam } from './dto/userId.param';
-import { UpdateUserRequest } from './dto/updateUser.request';
+
+import { UserEmailRequest, UserIdRequest, UpdateUserRequest, CreateUserRequest, UserResponse} from '@app/common';
 
 @Injectable()
 export class UserService {
@@ -20,7 +18,7 @@ export class UserService {
     // });
   }
 
-  async findOneByEmail(email: UserEmailParam) {
+  async findOneByEmail(email: UserEmailRequest) {
     try {
       this.logger.log(`Finding user by email: ${email}`);
       return this.userRepository.findOneBy({ where: email });
@@ -30,7 +28,7 @@ export class UserService {
     }
   }
 
-  async findOneById(id: UserIdParam) {
+  async findOneById(id: UserIdRequest) {
     try {
       return this.userRepository.findOneById(id.id);
     }
@@ -58,20 +56,26 @@ export class UserService {
 
     return newUser;
   }
-  async update(id: UserIdParam, data: UpdateUserRequest) {
+  async update(request: UpdateUserRequest) {
+    const { id, data } = request;
     try {
-      return this.userRepository.update(id.id, data);
+      return this.userRepository.update(id, 
+        {
+          ...data
+        }
+      );
   }
     catch (error) {
       throw new BadRequestException('Invalid data provided.');
     }
   }
-  async delete(id: UserIdParam) {
+  async delete(id: UserIdRequest) {
     const result = await this.userRepository.delete(id.id);
     if (!result) {
       throw new NotFoundException('User not found.');
     }
     return {
+      deleted: true,
       message: 'User deleted successfully.',
     }
   }
