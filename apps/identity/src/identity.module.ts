@@ -23,7 +23,7 @@ import { MemberGroupModule } from './member_group/member_group.module';
       envFilePath: './apps/identity/.env',
     }),
     DatabaseModule,
-    RmqModule,
+    // RmqModule,
     UserModule,
     GroupModule,
     MemberGroupModule,
