@@ -1,0 +1,103 @@
+syntax = "proto3";
+
+package user;
+
+service UserService {
+    // Get all users
+    rpc GetAllUsers (Empty) returns (UsersResponse);
+
+    // Get a user by ID
+    rpc GetUserById (UserIdRequest) returns (UserResponse);
+
+    // Get a user by email
+    rpc GetUserByEmail (UserEmailRequest) returns (UserResponse);
+
+        // Create a new user
+    rpc CreateUser (CreateUserRequest) returns (UserResponse);
+  
+    // Update a user
+    rpc UpdateUser (UpdateUserRequest) returns (UserResponse);
+  
+    // Delete a user
+    rpc DeleteUser (UserIdRequest) returns (DeleteResponse);
+
+    //Validate user
+    rpc ValidateUser (ValidateUserRequest) returns (ValidateUserResponse);
+}
+
+// Empty message for requests that don't need parameters
+message Empty {}
+
+// Request with user ID
+message UserIdRequest {
+    string id = 1;
+}
+
+// Request with user email
+message UserEmailRequest {
+    string email = 1;
+}
+
+// Request for creating a user
+message CreateUserRequest {
+    string email = 1;
+    string password = 2;
+    string username = 3;
+    optional string phoneNumber = 4;
+    optional string address = 5;
+  // Add additional fields as needed for your CreateUserRequest
+}
+
+message UpdateUserData {
+    string username = 1;
+    optional string phoneNumber = 2;
+    optional string address = 3;
+    // Các trường cần cập nhật khác
+}
+
+// Request for updating a user
+message UpdateUserRequest {
+    string id = 1;
+    UpdateUserData data = 2;
+}
+
+// Request for validate user
+message ValidateUserRequest {
+  string email = 1;
+  string password = 2;
+}
+
+// User information
+message UserInfo {
+    string id = 1;
+    string email = 2;
+    string phoneNumber = 3;
+    string refreshToken = 4;
+    string role = 5;
+    string googleId = 6;
+    string emailCode = 7;
+    string createdAt = 8;
+    string updatedAt = 9;
+}
+
+// Response containing a single user
+message UserResponse {
+    UserInfo user = 1;
+}
+
+// Response containing multiple users
+message UsersResponse {
+    repeated UserInfo users = 1;
+}
+
+// Response for delete operation
+message DeleteResponse {
+    bool deleted = 1;
+    string message = 2;
+}
+
+message ValidateUserResponse {
+    bool isValid = 1;
+    optional UserInfo user = 2; // Chỉ có giá trị khi isValid = true
+    string message = 3;
+}
