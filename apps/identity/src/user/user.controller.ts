@@ -11,99 +11,200 @@ export class UserController implements UserServiceController {
   ) {}
 
   async getAllUsers(): Promise<UsersResponse> {
-    const users = await this.userService.findAll();
-    return { 
-      users: users.map(({ password, ...user }) => ({
-      ...user,
-      createdAt: user.createdAt ? user.createdAt.toISOString() : '',
-      updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
-      }))
-    };
+    try {
+      const users = await this.userService.findAll();
+      return {
+        status: {
+          code: 200,
+          message: 'Get all users success',
+          timestamp: new Date().toISOString(),
+        },
+        users: users.map(({ password, ...user }) => ({
+        ...user,
+        createdAt: user.createdAt ? user.createdAt.toISOString() : '',
+        updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
+        }))
+      };
+    }
+    catch (error) {
+      return {
+        status: {
+          code: error.status || 500,
+          message: error.message,
+          error: error.error || 'Internal Server Error',
+          timestamp: new Date().toISOString(),
+        },
+        users: [],
+      };
+    }
+
   }
 
   async getUserById( id: UserIdRequest): Promise<UserResponse> {
-    const user = await this.userService.findOneById(id);
-    const { password, ...userWithoutPassword } = user;
-    return { 
-      user: {
-      ...userWithoutPassword,
-      createdAt: user.createdAt ? user.createdAt.toISOString() : '',
-      updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
-      } 
-    };
+    try {
+      const user = await this.userService.findOneById(id);
+      const { password, ...userWithoutPassword } = user;
+      return {
+        status: {
+          code: 200,
+          message: 'Get user by id success',
+          timestamp: new Date().toISOString(),
+        },
+        user: {
+        ...userWithoutPassword,
+        createdAt: user.createdAt ? user.createdAt.toISOString() : '',
+        updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
+        } 
+      };
+    }
+    catch (error) {
+      return {
+        status: {
+          code: error.status || 500,
+          message: error.message,
+          error: error.error || 'Internal Server Error',
+          timestamp: new Date().toISOString(),
+        },
+      };
+    }
   }
 
   async getUserByEmail(email: UserEmailRequest) {
-    const user = await this.userService.findOneByEmail(email);
-    const { password, ...userWithoutPassword } = user;
-    return { 
-      user: {
-      ...userWithoutPassword,
-      createdAt: user.createdAt ? user.createdAt.toISOString() : '',
-      updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
-      } 
-    };
+    try {
+      const user = await this.userService.findOneByEmail(email);
+      const { password, ...userWithoutPassword } = user;
+      return { 
+        status: {
+          code: 200,
+          message: 'Get user by email success',
+          timestamp: new Date().toISOString(),
+        },
+        user: {
+        ...userWithoutPassword,
+        createdAt: user.createdAt ? user.createdAt.toISOString() : '',
+        updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
+        } 
+      };
+    }
+    catch (error) {
+      return {
+        status: {
+          code: error.status || 500,
+          message: error.message,
+          error: error.error || 'Internal Server Error',
+          timestamp: new Date().toISOString(),
+        },
+      };
+    }
   }
   async createUser(request: CreateUserRequest): Promise<UserResponse> {
-    const user = await this.userService.create(request);
-    const { password, ...userWithoutPassword } = user;
-    return { 
-      user: {
-      ...userWithoutPassword,
-      createdAt: user.createdAt ? user.createdAt.toISOString() : '',
-      updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
-      } 
-    };
+    try {
+      const user = await this.userService.create(request);
+      const { password, ...userWithoutPassword } = user;
+      return {
+        status: {
+          code: 200,
+          message: 'Create user success',
+          timestamp: new Date().toISOString(),
+        },
+        user: {
+        ...userWithoutPassword,
+        createdAt: user.createdAt ? user.createdAt.toISOString() : '',
+        updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
+        } 
+      };
+    }
+    catch (error) {
+      return {
+        status: {
+          code: error.status || 500,
+          message: error.message,
+          error: error.error || 'Internal Server Error',
+          timestamp: new Date().toISOString(),
+        },
+      };
+    }
   }
   
   async updateUser(request: UpdateUserRequest): Promise<UserResponse> {
-    const user = await this.userService.update(request);
-    const { password, ...userWithoutPassword } = user;
-    return { 
-      user: {
-      ...userWithoutPassword,
-      createdAt: user.createdAt ? user.createdAt.toISOString() : '',
-      updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
-      } 
-    };
+    try {
+      const user = await this.userService.update(request);
+      const { password, ...userWithoutPassword } = user;
+      return {
+        status: {
+          code: 1,
+          message: 'Success',
+          timestamp: new Date().toISOString(),
+        },
+        user: {
+        ...userWithoutPassword,
+        createdAt: user.createdAt ? user.createdAt.toISOString() : '',
+        updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
+        } 
+      };
+    }
+    catch (error) {
+      return {
+        status: {
+          code: error.status || 500,
+          message: error.message,
+          error: error.error || 'Internal Server Error',
+          timestamp: new Date().toISOString(),
+        },
+      };
+    }
   }
 
   async deleteUser(id: UserIdRequest): Promise<DeleteResponse> {
-    return this.userService.delete(id);
+    try {
+      const response = await this.userService.delete(id);
+      return {
+        status: {
+          code: 200,
+          message: response.message,
+          timestamp: new Date().toISOString(),
+        },
+      };
+    }
+    catch (error) {
+      return {
+        status: {
+          code: error.status || 500,
+          message: error.message,
+          error: error.error || 'Internal Server Error',
+          timestamp: new Date().toISOString(),
+        },
+      };
+    }
   }
 
   async validateUser({ email, password }): Promise<ValidateUserResponse> {
     try {
       const user = await this.userService.findOneByEmail(email);
-      if (!user)
-        return {
-          isValid: false,
-          message: 'User not found',
-        }
-      
-      const isPasswordValid = await this.userService.validatePassword(user, password);
-      if (!isPasswordValid)
-        return {
-          isValid: false,
-          message: 'Invalid password',
-        }
-      
+      await this.userService.validatePassword(user, password);
       // Loại bỏ password
       const { password: _, ...userWithoutPassword } = user;
       return {
-        isValid: true,
+        status: {
+          code: 200,
+          message: 'User is valid',
+          timestamp: new Date().toISOString(),
+        },
         user: {
         ...userWithoutPassword,
         createdAt: user.createdAt ? user.createdAt.toISOString() : '',
         updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
         },
-        message: 'User is valid',
       };
     } catch (error) {
       console.error('Error validating user:', error);
       return {
-        isValid: false,
-        message: 'An error occurred while validating the user',
+        status: {
+          code: error.status || 500,
+          message: error.message,
+          error: error.error || 'Internal Server Error',
+          timestamp: new Date().toISOString(),
+        },
       };
     }
   }
