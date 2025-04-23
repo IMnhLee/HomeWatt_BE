@@ -38,6 +38,9 @@ export class User extends AbstractEntity {
     })
     role: string;
 
+    @Column({type: "varchar", nullable: true,})
+    googleId: string;
+
     @OneToMany(() => MemberGroup, memberGroup => memberGroup.user)
     memberships: MemberGroup[];
 }
