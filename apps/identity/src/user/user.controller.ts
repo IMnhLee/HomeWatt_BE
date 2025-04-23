@@ -1,16 +1,16 @@
 import { Controller } from '@nestjs/common';
 import { UserService } from './user.service';
-import { UserServiceController, UserIdRequest, UserEmailRequest, CreateUserRequest, UpdateUserRequest, UserResponse, UsersResponse, UserServiceControllerMethods, DeleteResponse, ValidateUserResponse} from '@app/common';
+import {UserDTO} from '@app/common';
 
 @Controller('user')
-@UserServiceControllerMethods()
+@UserDTO.UserServiceControllerMethods()
 // @UsePipes(new ValidationPipe({ transform: true }))
-export class UserController implements UserServiceController {
+export class UserController implements UserDTO.UserServiceController {
   constructor(
     private readonly userService: UserService,
   ) {}
 
-  async getAllUsers(): Promise<UsersResponse> {
+  async getAllUsers(): Promise<UserDTO.UsersResponse> {
     try {
       const users = await this.userService.findAll();
       return {
@@ -40,7 +40,7 @@ export class UserController implements UserServiceController {
 
   }
 
-  async getUserById( id: UserIdRequest): Promise<UserResponse> {
+  async getUserById( id: UserDTO.UserIdRequest): Promise<UserDTO.UserResponse> {
     try {
       const user = await this.userService.findOneById(id);
       const { password, ...userWithoutPassword } = user;
@@ -69,7 +69,7 @@ export class UserController implements UserServiceController {
     }
   }
 
-  async getUserByEmail(email: UserEmailRequest) {
+  async getUserByEmail(email: UserDTO.UserEmailRequest) {
     try {
       const user = await this.userService.findOneByEmail(email);
       const { password, ...userWithoutPassword } = user;
@@ -97,7 +97,7 @@ export class UserController implements UserServiceController {
       };
     }
   }
-  async createUser(request: CreateUserRequest): Promise<UserResponse> {
+  async createUser(request: UserDTO.CreateUserRequest): Promise<UserDTO.UserResponse> {
     try {
       const user = await this.userService.create(request);
       const { password, ...userWithoutPassword } = user;
@@ -126,7 +126,7 @@ export class UserController implements UserServiceController {
     }
   }
   
-  async updateUser(request: UpdateUserRequest): Promise<UserResponse> {
+  async updateUser(request: UserDTO.UpdateUserRequest): Promise<UserDTO.UserResponse> {
     try {
       const user = await this.userService.update(request);
       const { password, ...userWithoutPassword } = user;
@@ -155,7 +155,7 @@ export class UserController implements UserServiceController {
     }
   }
 
-  async deleteUser(id: UserIdRequest): Promise<DeleteResponse> {
+  async deleteUser(id: UserDTO.UserIdRequest): Promise<UserDTO.DeleteResponse> {
     try {
       const response = await this.userService.delete(id);
       return {
@@ -178,7 +178,7 @@ export class UserController implements UserServiceController {
     }
   }
 
-  async validateUser({ email, password }): Promise<ValidateUserResponse> {
+  async validateUser({ email, password }): Promise<UserDTO.ValidateUserResponse> {
     try {
       const user = await this.userService.findOneByEmail(email);
       await this.userService.validatePassword(user, password);

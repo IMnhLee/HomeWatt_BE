@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, UseInterceptors } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserRequest, UpdateUserData, UpdateUserRequest, UserEmailRequest, UserIdRequest } from '@app/common';
+import { UserDTO } from '@app/common';
 import { firstValueFrom } from 'rxjs';
 import { ResponseTransformInterceptor } from '../interceptors/response-transform.interceptor';
 
@@ -15,27 +15,27 @@ export class UserController {
     }
   
     @Get(':id')
-    async getUserById(@Param() id: UserIdRequest) {
+    async getUserById(@Param() id: UserDTO.UserIdRequest) {
       return this.userService.GetUserById(id);
   
     }
   
     @Get('email/:email')
-    async getUserByEmail(@Param() email: UserEmailRequest) {
+    async getUserByEmail(@Param() email: UserDTO.UserEmailRequest) {
       return this.userService.GetUserByEmail(email);
     }
     @Post('create')
-    async createUser(@Body() request: CreateUserRequest) {
+    async createUser(@Body() request: UserDTO.CreateUserRequest) {
       return this.userService.CreateUser(request);
     }
     
     @Put(':id')
-    async updateUser(@Param() id: UserIdRequest, @Body() request: UpdateUserData) {
+    async updateUser(@Param() id: UserDTO.UserIdRequest, @Body() request: UserDTO.UpdateUserData) {
       return this.userService.UpdateUser({ ...id, data: request });
     }
   
     @Delete(':id')
-    async deleteUser(@Param() id: UserIdRequest) {
+    async deleteUser(@Param() id: UserDTO.UserIdRequest) {
       return this.userService.DeleteUser(id);
     }
 }

@@ -3,7 +3,7 @@ import { UserRepository } from './user.repository';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
 
-import { UserEmailRequest, UserIdRequest, UpdateUserRequest, CreateUserRequest, UserResponse} from '@app/common';
+import {UserDTO} from '@app/common';
 
 @Injectable()
 export class UserService {
@@ -18,7 +18,7 @@ export class UserService {
     // });
   }
 
-  async findOneByEmail(email: UserEmailRequest) {
+  async findOneByEmail(email: UserDTO.UserEmailRequest) {
     try {
       this.logger.log(`Finding user by email: ${email}`);
       return this.userRepository.findOneBy({ where: email });
@@ -28,7 +28,7 @@ export class UserService {
     }
   }
 
-  async findOneById(id: UserIdRequest) {
+  async findOneById(id: UserDTO.UserIdRequest) {
     try {
       return this.userRepository.findOneById(id.id);
     }
@@ -38,7 +38,7 @@ export class UserService {
     }
   }
 
-  async create(request: CreateUserRequest) {
+  async create(request: UserDTO.CreateUserRequest) {
     // kiểm tra email đã tồn tại chưa
     let foundUser: User | null = null;
     try {
@@ -56,7 +56,7 @@ export class UserService {
 
     return newUser;
   }
-  async update(request: UpdateUserRequest) {
+  async update(request: UserDTO.UpdateUserRequest) {
     const { id, data } = request;
     try {
       return this.userRepository.update(id, 
@@ -69,7 +69,7 @@ export class UserService {
       throw new BadRequestException('Invalid data provided.');
     }
   }
-  async delete(id: UserIdRequest) {
+  async delete(id: UserDTO.UserIdRequest) {
     const result = await this.userRepository.delete(id.id);
     if (!result) {
       throw new NotFoundException('User not found.');
