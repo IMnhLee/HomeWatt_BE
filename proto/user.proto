@@ -82,22 +82,30 @@ message UserInfo {
 
 // Response containing a single user
 message UserResponse {
-    UserInfo user = 1;
+    ResponseStatus status =1;
+    optional UserInfo user = 2;
 }
 
 // Response containing multiple users
 message UsersResponse {
-    repeated UserInfo users = 1;
+    ResponseStatus status = 1;
+    repeated UserInfo users = 2;
 }
 
 // Response for delete operation
 message DeleteResponse {
-    bool deleted = 1;
-    string message = 2;
+    ResponseStatus status = 1;
 }
 
 message ValidateUserResponse {
-    bool isValid = 1;
-    optional UserInfo user = 2; // Chỉ có giá trị khi isValid = true
-    string message = 3;
+    ResponseStatus status = 1;
+    optional UserInfo user = 2; // Chỉ có giá trị khi code = true
+}
+
+message ResponseStatus {
+  // 0: success, khác 0: error code
+  int32 code = 1;
+  string message = 2;
+  optional string error = 3;
+  optional string timestamp = 4;
 }
