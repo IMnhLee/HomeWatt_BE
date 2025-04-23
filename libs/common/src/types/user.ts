@@ -48,7 +48,7 @@ export interface UpdateUserData {
 /** Request for updating a user */
 export interface UpdateUserRequest {
   id: string;
-  data: UpdateUserData;
+  data: UpdateUserData | undefined;
 }
 
 /** Request for validate user */
@@ -72,25 +72,35 @@ export interface UserInfo {
 
 /** Response containing a single user */
 export interface UserResponse {
-  user: UserInfo | undefined;
+  status: ResponseStatus | undefined;
+  user?: UserInfo | undefined;
 }
 
 /** Response containing multiple users */
 export interface UsersResponse {
+  status: ResponseStatus | undefined;
   users: UserInfo[];
 }
 
 /** Response for delete operation */
 export interface DeleteResponse {
-  deleted: boolean;
-  message: string;
+  status: ResponseStatus | undefined;
 }
 
 export interface ValidateUserResponse {
-  isValid: boolean;
-  /** Chỉ có giá trị khi isValid = true */
+  status:
+    | ResponseStatus
+    | undefined;
+  /** Chỉ có giá trị khi code = true */
   user?: UserInfo | undefined;
+}
+
+export interface ResponseStatus {
+  /** 0: success, khác 0: error code */
+  code: number;
   message: string;
+  error?: string | undefined;
+  timestamp?: string | undefined;
 }
 
 export const USER_PACKAGE_NAME = "user";
