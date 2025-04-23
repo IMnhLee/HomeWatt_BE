@@ -1,8 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, UseInterceptors } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserRequest, UpdateUserData, UpdateUserRequest, UserEmailRequest, UserIdRequest } from '@app/common';
+import { firstValueFrom } from 'rxjs';
+import { ResponseTransformInterceptor } from '../interceptors/response-transform.interceptor';
 
 @Controller('user')
+@UseInterceptors(ResponseTransformInterceptor)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
