@@ -16,22 +16,22 @@ export interface ValidateTokenRequest {
 
 export interface ValidateTokenResponse {
   status: ResponseStatus | undefined;
-  user?: UserInfo | undefined;
+  data?: UserInfo | undefined;
 }
 
-export interface CheckRolesRequest {
+export interface CheckRoleRequest {
   userId: string;
-  requiredRoles: string[];
+  requiredRole: string;
 }
 
-export interface CheckRolesResponse {
+export interface CheckRoleResponse {
   status: ResponseStatus | undefined;
 }
 
 export interface UserInfo {
   id: string;
   email: string;
-  roles: string[];
+  role: string;
   /** Add other user fields as needed */
   username: string;
 }
@@ -93,23 +93,17 @@ export interface VerifyTokenResponse {
 export interface JwtPayload {
   sub: string;
   email: string;
-  roles: string[];
-  /** Add any other payload fields as needed */
-  iat: number;
-  exp: number;
+  role: string;
 }
 
 export const AUTH_PACKAGE_NAME = "auth";
 
+/**
+ * Validate a JWT token and return user info
+ * rpc ValidateToken (ValidateTokenRequest) returns (ValidateTokenResponse);
+ */
+
 export interface AuthServiceClient {
-  /** Validate a JWT token and return user info */
-
-  validateToken(request: ValidateTokenRequest): Observable<ValidateTokenResponse>;
-
-  /** Check if a user has required roles */
-
-  checkRoles(request: CheckRolesRequest): Observable<CheckRolesResponse>;
-
   /** Login endpoint */
 
   login(request: LoginRequest): Observable<LoginResponse>;
@@ -126,28 +120,17 @@ export interface AuthServiceClient {
 
   validateGoogleToken(request: GoogleTokenRequest): Observable<LoginResponse>;
 
-  /** Login with google */
-
-  googleLogin(request: GoogleLoginRequest): Observable<LoginResponse>;
-
   /** verify token */
 
   verifyToken(request: VerifyTokenRequest): Observable<VerifyTokenResponse>;
 }
 
+/**
+ * Validate a JWT token and return user info
+ * rpc ValidateToken (ValidateTokenRequest) returns (ValidateTokenResponse);
+ */
+
 export interface AuthServiceController {
-  /** Validate a JWT token and return user info */
-
-  validateToken(
-    request: ValidateTokenRequest,
-  ): Promise<ValidateTokenResponse> | Observable<ValidateTokenResponse> | ValidateTokenResponse;
-
-  /** Check if a user has required roles */
-
-  checkRoles(
-    request: CheckRolesRequest,
-  ): Promise<CheckRolesResponse> | Observable<CheckRolesResponse> | CheckRolesResponse;
-
   /** Login endpoint */
 
   login(request: LoginRequest): Promise<LoginResponse> | Observable<LoginResponse> | LoginResponse;
@@ -166,10 +149,6 @@ export interface AuthServiceController {
 
   validateGoogleToken(request: GoogleTokenRequest): Promise<LoginResponse> | Observable<LoginResponse> | LoginResponse;
 
-  /** Login with google */
-
-  googleLogin(request: GoogleLoginRequest): Promise<LoginResponse> | Observable<LoginResponse> | LoginResponse;
-
   /** verify token */
 
   verifyToken(
@@ -179,16 +158,7 @@ export interface AuthServiceController {
 
 export function AuthServiceControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = [
-      "validateToken",
-      "checkRoles",
-      "login",
-      "refreshToken",
-      "logout",
-      "validateGoogleToken",
-      "googleLogin",
-      "verifyToken",
-    ];
+    const grpcMethods: string[] = ["login", "refreshToken", "logout", "validateGoogleToken", "verifyToken"];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
       GrpcMethod("AuthService", method)(constructor.prototype[method], method, descriptor);
