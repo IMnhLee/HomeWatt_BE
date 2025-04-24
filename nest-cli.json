@@ -1,31 +1,36 @@
 {
   "$schema": "https://json.schemastore.org/nest-cli",
   "collection": "@nestjs/schematics",
-  "sourceRoot": "apps/api-gateway/src",
+  "sourceRoot": "./",
+  "entryFile": "src/main",
   "compilerOptions": {
     "deleteOutDir": true,
     "webpack": true,
-    "tsConfigPath": "apps/api-gateway/tsconfig.app.json"
+    "tsConfigPath": "apps/apigateway/tsconfig.app.json"
   },
   "monorepo": true,
-  "root": "apps/api-gateway",
+  "root": "apps/apigateway",
   "projects": {
-    "api-gateway": {
+    "apigateway": {
       "type": "application",
-      "root": "apps/api-gateway",
-      "entryFile": "main",
-      "sourceRoot": "apps/api-gateway/src",
+      "root": "apps/apigateway",
+      "entryFile": "src/main",
+      "sourceRoot": "./",
       "compilerOptions": {
-        "tsConfigPath": "apps/api-gateway/tsconfig.app.json"
+        "tsConfigPath": "apps/apigateway/tsconfig.app.json",
+        "assets": ["proto/*.proto"],
+        "watchAssets": true
       }
     },
     "auth": {
       "type": "application",
       "root": "apps/auth",
-      "entryFile": "main",
-      "sourceRoot": "apps/auth/src",
+      "entryFile": "src/main",
+      "sourceRoot": "./",
       "compilerOptions": {
-        "tsConfigPath": "apps/auth/tsconfig.app.json"
+        "tsConfigPath": "apps/auth/tsconfig.app.json",
+        "assets": ["proto/*.proto"],
+        "watchAssets": true
       }
     },
     "common": {
@@ -40,10 +45,12 @@
     "identity": {
       "type": "application",
       "root": "apps/identity",
-      "entryFile": "main",
-      "sourceRoot": "apps/identity/src",
+      "entryFile": "/src/main",
+      "sourceRoot": "./",
       "compilerOptions": {
-        "tsConfigPath": "apps/identity/tsconfig.app.json"
+        "tsConfigPath": "apps/identity/tsconfig.app.json",
+        "assets": ["proto/*.proto"],
+        "watchAssets": true
       }
     }
   }
