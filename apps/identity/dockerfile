@@ -1,0 +1,41 @@
+FROM node:alpine As development
+
+# Thiết lập thư mục làm việc
+WORKDIR /usr/src/app
+
+# Sao chép file package.json và package-lock.json (nếu có) trước
+# để tận dụng layer caching của Docker
+COPY package*.json ./
+
+# Cài đặt các dependencies
+RUN npm install
+
+# Sao chép toàn bộ mã nguồn dự án
+COPY . .
+
+# Build dự án
+RUN npm run build identity
+
+# Giai đoạn production dùng node alpine là nhẹ
+FROM node:alpine As production
+
+# Thiết lập biến môi trường là production
+ARG NODE_ENV=production
+ENV NODE_ENV=${NODE_ENV}
+
+# Thiết lập thư mục làm việc
+WORKDIR /usr/src/app
+
+# Sao chép file package*.json 
+COPY package*.json ./
+
+# Chỉ cài đặt các dependencies cho production
+RUN npm ci --only=production
+
+# Sao chép proto files và cấu hình cần thiết
+COPY --from=development /usr/src/app/proto/ ./proto/
+COPY --from=development /usr/src/app/dist/ ./dist/
+COPY --from=development /usr/src/app/node_modules/ ./node_modules/
+
+# Lệnh khởi động service
+CMD ["node", "dist/apps/identity/src/main"]
