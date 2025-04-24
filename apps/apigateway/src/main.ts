@@ -1,8 +1,30 @@
 import { NestFactory } from '@nestjs/core';
 import { apigatewayModule } from './apigateway.module';
+import { ResponseTransformInterceptor } from './interceptors/response-transform.interceptor';
+import { ValidationPipe } from '@nestjs/common';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(apigatewayModule);
-  await app.listen(process.env.port ?? 3000);
+  
+  // Global interceptors
+  // app.useGlobalInterceptors(new ResponseTransformInterceptor());
+  
+  // Global pipes
+  app.useGlobalPipes(new ValidationPipe({
+    transform: true,
+    whitelist: true,
+  }));
+  
+  // Middlewares
+  app.use(cookieParser());
+  
+  // CORS
+  app.enableCors({
+    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    credentials: true,
+  });
+  
+  await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
