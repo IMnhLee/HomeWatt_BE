@@ -83,13 +83,13 @@ message UserInfo {
 // Response containing a single user
 message UserResponse {
     ResponseStatus status =1;
-    optional UserInfo user = 2;
+    optional UserInfo data = 2;
 }
 
 // Response containing multiple users
 message UsersResponse {
     ResponseStatus status = 1;
-    repeated UserInfo users = 2;
+    repeated UserInfo data = 2;
 }
 
 // Response for delete operation
@@ -99,7 +99,7 @@ message DeleteResponse {
 
 message ValidateUserResponse {
     ResponseStatus status = 1;
-    optional UserInfo user = 2; // Chỉ có giá trị khi code = true
+    optional UserInfo data = 2; // Chỉ có giá trị khi code = true
 }
 
 message ResponseStatus {

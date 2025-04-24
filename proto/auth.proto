@@ -1,0 +1,115 @@
+syntax = "proto3";
+
+package auth;
+
+service AuthService {
+    // Validate a JWT token and return user info
+    // rpc ValidateToken (ValidateTokenRequest) returns (ValidateTokenResponse);
+    
+    // Check if a user has required role
+    // rpc CheckRole (CheckRoleRequest) returns (CheckRoleResponse);
+    
+    // Login endpoint
+    rpc Login (LoginRequest) returns (LoginResponse);
+    
+    // Refresh token endpoint
+    rpc RefreshToken (RefreshTokenRequest) returns (RefreshTokenResponse);
+    
+    // Logout endpoint
+    rpc Logout (RefreshTokenRequest) returns (LogoutResponse);
+    
+    // Google OAuth
+    rpc ValidateGoogleToken (GoogleTokenRequest) returns (LoginResponse);
+
+    // Login with google
+    // rpc googleLogin (GoogleLoginRequest) returns (LoginResponse);
+
+    //verify token
+    rpc verifyToken (VerifyTokenRequest) returns (VerifyTokenResponse);
+}
+
+message ValidateTokenRequest {
+    string token = 1;
+}
+
+message ValidateTokenResponse {
+    ResponseStatus status = 1;
+    optional UserInfo data = 2;
+}
+
+message CheckRoleRequest {
+    string userId = 1;
+    string requiredRole = 2;
+}
+
+message CheckRoleResponse {
+    ResponseStatus status = 1;
+}
+
+message UserInfo {
+    string id = 1;
+    string email = 2;
+    string role = 3;
+    string username = 4;
+    // Add other user fields as needed
+}
+
+message LoginRequest {
+    string email = 1;
+    string password = 2;
+}
+
+message LoginResponse {
+    ResponseStatus status = 1;
+    optional TokenData data = 2;
+}
+
+message RefreshTokenRequest {
+    string refreshToken = 1;
+}
+
+message RefreshTokenResponse {
+    ResponseStatus status = 1;
+    optional TokenData data = 2;
+}
+
+message TokenData {
+    string accessToken = 1;
+    string refreshToken = 2;
+    int32 expiresIn = 3;
+}
+
+message LogoutResponse {
+    ResponseStatus status = 1;
+}
+
+message GoogleTokenRequest {
+    string token = 1;
+}
+
+message ResponseStatus {
+    int32 code = 1;
+    string message = 2;
+    optional string error = 3;
+}
+
+message GoogleLoginRequest {
+    string email = 1;
+    string displayName = 2;
+    optional string imageUrl = 3;
+}
+
+message VerifyTokenRequest {
+    string token = 1;
+}
+
+message VerifyTokenResponse {
+    ResponseStatus status = 1;
+    optional JwtPayload data = 3;
+}
+
+message JwtPayload {
+    string sub = 1;
+    string email = 2;
+    string role = 3;
+}
