@@ -19,7 +19,7 @@ export class UserController implements UserDTO.UserServiceController {
           message: 'Get all users success',
           timestamp: new Date().toISOString(),
         },
-        users: users.map(({ password, ...user }) => ({
+        data: users.map(({ password, ...user }) => ({
         ...user,
         createdAt: user.createdAt ? user.createdAt.toISOString() : '',
         updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
@@ -34,7 +34,7 @@ export class UserController implements UserDTO.UserServiceController {
           error: error.error || 'Internal Server Error',
           timestamp: new Date().toISOString(),
         },
-        users: [],
+        data: [],
       };
     }
 
@@ -50,7 +50,7 @@ export class UserController implements UserDTO.UserServiceController {
           message: 'Get user by id success',
           timestamp: new Date().toISOString(),
         },
-        user: {
+        data: {
         ...userWithoutPassword,
         createdAt: user.createdAt ? user.createdAt.toISOString() : '',
         updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
@@ -107,7 +107,7 @@ export class UserController implements UserDTO.UserServiceController {
           message: 'Create user success',
           timestamp: new Date().toISOString(),
         },
-        user: {
+        data: {
         ...userWithoutPassword,
         createdAt: user.createdAt ? user.createdAt.toISOString() : '',
         updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
@@ -136,7 +136,7 @@ export class UserController implements UserDTO.UserServiceController {
           message: 'Success',
           timestamp: new Date().toISOString(),
         },
-        user: {
+        data: {
         ...userWithoutPassword,
         createdAt: user.createdAt ? user.createdAt.toISOString() : '',
         updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
@@ -180,7 +180,7 @@ export class UserController implements UserDTO.UserServiceController {
 
   async validateUser({ email, password }): Promise<UserDTO.ValidateUserResponse> {
     try {
-      const user = await this.userService.findOneByEmail(email);
+      const user = await this.userService.findOneByEmail({email});
       await this.userService.validatePassword(user, password);
       // Loại bỏ password
       const { password: _, ...userWithoutPassword } = user;
@@ -190,7 +190,7 @@ export class UserController implements UserDTO.UserServiceController {
           message: 'User is valid',
           timestamp: new Date().toISOString(),
         },
-        user: {
+        data: {
         ...userWithoutPassword,
         createdAt: user.createdAt ? user.createdAt.toISOString() : '',
         updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
