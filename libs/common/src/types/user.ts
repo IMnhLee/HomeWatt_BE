@@ -73,13 +73,13 @@ export interface UserInfo {
 /** Response containing a single user */
 export interface UserResponse {
   status: ResponseStatus | undefined;
-  user?: UserInfo | undefined;
+  data?: UserInfo | undefined;
 }
 
 /** Response containing multiple users */
 export interface UsersResponse {
   status: ResponseStatus | undefined;
-  users: UserInfo[];
+  data: UserInfo[];
 }
 
 /** Response for delete operation */
@@ -92,7 +92,7 @@ export interface ValidateUserResponse {
     | ResponseStatus
     | undefined;
   /** Chỉ có giá trị khi code = true */
-  user?: UserInfo | undefined;
+  data?: UserInfo | undefined;
 }
 
 export interface ResponseStatus {
