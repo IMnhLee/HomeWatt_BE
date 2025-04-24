@@ -1,0 +1,101 @@
+services:
+  apigateway:
+    build:
+      context: .
+      dockerfile: ./apps/apigateway/Dockerfile
+      target: development
+    command: npm run start:dev apigateway
+    ports:
+      - '3000:3000'
+    env_file:
+      - ./apps/apigateway/.env
+    environment:
+      - AUTH_GRPC_URL=auth:3001
+      - IDENTITY_GRPC_URL=identity:5000
+      - PORT=3000
+      - JWT_ACCESS_SECRET=your_access_secret
+      - GOOGLE_CLIENT_ID=your_google_client_id
+      - GOOGLE_CLIENT_SECRET=your_google_client_secret
+      - GOOGLE_CALLBACK_URL=http://localhost:3000/auth/google/callback
+    depends_on:
+      - auth
+      - identity
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+
+  identity:
+    build:
+      context: .
+      dockerfile: ./apps/identity/Dockerfile
+      target: development
+    command: npm run start:dev identity
+    env_file:
+      - ./apps/identity/.env
+    environment:
+      - DB_HOST=postgres
+      - PORT=3002
+    ports:
+      # - '3002:3002'
+      - '50051:50051' # gRPC port
+    depends_on:
+      - postgres
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+      
+  auth:
+    build:
+      context: .
+      dockerfile: ./apps/auth/Dockerfile
+      target: development
+    command: npm run start:dev auth
+    ports:
+      # - '3001:3001'
+      - '50052:50052' # gRPC port
+    env_file:
+      - ./apps/auth/.env
+    environment:
+      - IDENTITY_GRPC_URL=identity:5000
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_ACCESS_SECRET=your_access_secret
+      - JWT_REFRESH_SECRET=your_refresh_secret
+      - JWT_ACCESS_EXPIRATION=15m
+      - JWT_REFRESH_EXPIRATION=7d
+      - JWT_ACCESS_EXPIRATION_SECONDS=900
+      - JWT_REFRESH_EXPIRATION_SECONDS=604800
+      - GOOGLE_CLIENT_ID=your_google_client_id
+    depends_on:
+      - identity
+      - redis
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+
+  postgres:
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=user_group_db
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:latest
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis-data:/data
+
+  rabbitmq:
+    image: rabbitmq
+    ports:
+      - '5672:5672'
+      
+volumes:
+  postgres-data:
+  redis-data:
