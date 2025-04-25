@@ -1,0 +1,9 @@
+{
+    "watch": ["apps", "libs"],
+    "ext": "ts,js,json,proto",
+    "ignore": ["node_modules", "dist"],
+    "legacyWatch": true,
+    "delay": "500",
+    "polling": true,
+    "verbose": true
+  }
