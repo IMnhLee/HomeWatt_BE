@@ -13,6 +13,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
         options: {
           package: UserDTO.USER_PACKAGE_NAME,
           protoPath: join(__dirname, '../user.proto'),
+          url: 'identity:50051'
         },
       },
     ]),
