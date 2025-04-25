@@ -4,7 +4,8 @@ import { Request } from 'express';
 import { AuthDTO } from '@app/common';
 
 @Controller('auth')
-export class AuthController {
+@AuthDTO.AuthServiceControllerMethods()
+export class AuthController implements AuthDTO.AuthServiceController {
   constructor(private authService: AuthService) {}
 
   async login(loginRequest: AuthDTO.LoginRequest) {
@@ -19,7 +20,7 @@ export class AuthController {
     return this.authService.logout(logoutRequest);
   }
 
-  async googleToken(tokenRequest: AuthDTO.GoogleTokenRequest) {
+  async validateGoogleToken(tokenRequest: AuthDTO.GoogleTokenRequest) {
     return this.authService.validateGoogleToken(tokenRequest);
   }
 
