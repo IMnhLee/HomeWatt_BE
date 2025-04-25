@@ -1,6 +1,8 @@
 import { UserDTO } from '@app/common';
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
+import { handleMicroserviceResponse } from '@app/common';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class UserService implements OnModuleInit {
@@ -13,27 +15,33 @@ export class UserService implements OnModuleInit {
         this.client.getService<UserDTO.UserServiceClient>(UserDTO.USER_SERVICE_NAME);
     }
 
-    GetAllUsers() {
-        return this.userService.getAllUsers({});
+    async GetAllUsers() {
+        const response = await firstValueFrom(this.userService.getAllUsers({}));
+        return handleMicroserviceResponse(response);
     };
 
-    GetUserById(id: UserDTO.UserIdRequest) {
-        return this.userService.getUserById(id);
+    async GetUserById(id: UserDTO.UserIdRequest) {
+        const response = await firstValueFrom(this.userService.getUserById(id));
+        return handleMicroserviceResponse(response);
     };
 
-    GetUserByEmail(email: UserDTO.UserEmailRequest) {
-        return this.userService.getUserByEmail(email);
+    async GetUserByEmail(email: UserDTO.UserEmailRequest) {
+        const response = await firstValueFrom(this.userService.getUserByEmail(email));
+        return handleMicroserviceResponse(response);
     };
 
-    CreateUser(request: UserDTO.CreateUserRequest) {
-        return this.userService.createUser(request);
+    async CreateUser(request: UserDTO.CreateUserRequest) {
+        const response = await firstValueFrom(this.userService.createUser(request));
+        return handleMicroserviceResponse(response);
     };
 
-    UpdateUser(request: UserDTO.UpdateUserRequest) {
-        return this.userService.updateUser(request);
+    async UpdateUser(request: UserDTO.UpdateUserRequest) {
+        const response = await firstValueFrom(this.userService.updateUser(request));
+        return handleMicroserviceResponse(response);
     };
 
-    DeleteUser(id: UserDTO.UserIdRequest) {
-        return this.userService.deleteUser(id);
+    async DeleteUser(id: UserDTO.UserIdRequest) {
+        const response = await firstValueFrom(this.userService.deleteUser(id));
+        return handleMicroserviceResponse(response);
     };
 }
