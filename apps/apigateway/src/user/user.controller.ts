@@ -2,10 +2,9 @@ import { Body, Controller, Delete, Get, Param, Post, Put, UseInterceptors } from
 import { UserService } from './user.service';
 import { UserDTO } from '@app/common';
 import { firstValueFrom } from 'rxjs';
-import { ResponseTransformInterceptor } from '../interceptors/response-transform.interceptor';
 
 @Controller('user')
-@UseInterceptors(ResponseTransformInterceptor)
+// @UseInterceptors(ResponseTransformInterceptor)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
