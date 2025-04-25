@@ -1,6 +1,5 @@
 import { NestFactory } from '@nestjs/core';
 import { apigatewayModule } from './apigateway.module';
-import { ResponseTransformInterceptor } from './interceptors/response-transform.interceptor';
 import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 
