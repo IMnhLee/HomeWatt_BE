@@ -1,5 +1,10 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 
+export interface MicroserviceResponseResult<T> {
+  data: T;
+  message: string;
+}
+
 export function handleMicroserviceResponse<T>(
   response: {
     status?: {
@@ -13,7 +18,7 @@ export function handleMicroserviceResponse<T>(
     allowEmptyData?: boolean;
     throwOnNoData?: boolean;
   } = { allowEmptyData: false, throwOnNoData: true }
-): T {
+): MicroserviceResponseResult<T> {
   // Check if status exists
   if (!response || !response.status) {
     throw new HttpException(
@@ -31,14 +36,17 @@ export function handleMicroserviceResponse<T>(
   }
   
   // Check if data exists when required
-  if (options.throwOnNoData && response.data === undefined && !options.allowEmptyData) {
-    throw new HttpException(
-      'Data is undefined in microservice response',
-      HttpStatus.INTERNAL_SERVER_ERROR
-    );
-  }
+  // if (options.throwOnNoData && !options.allowEmptyData) {
+  //   throw new HttpException(
+  //     'Data is undefined in microservice response',
+  //     HttpStatus.INTERNAL_SERVER_ERROR
+  //   );
+  // }
   
-  return response.data as T;
+  return {
+    data: response.data as T,
+    message: response.status.message || 'Operation successful'
+  };
 }
 
 /**
