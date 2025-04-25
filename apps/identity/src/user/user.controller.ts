@@ -79,7 +79,7 @@ export class UserController implements UserDTO.UserServiceController {
           message: 'Get user by email success',
           timestamp: new Date().toISOString(),
         },
-        user: {
+        data: {
         ...userWithoutPassword,
         createdAt: user.createdAt ? user.createdAt.toISOString() : '',
         updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
@@ -132,7 +132,7 @@ export class UserController implements UserDTO.UserServiceController {
       const { password, ...userWithoutPassword } = user;
       return {
         status: {
-          code: 1,
+          code: 200,
           message: 'Success',
           timestamp: new Date().toISOString(),
         },
