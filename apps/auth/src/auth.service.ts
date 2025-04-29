@@ -266,7 +266,11 @@ export class AuthService {
           code: 200,
           message: 'Token is valid'
         },
-        data: payload,
+        data: {
+          sub: payload.sub,
+          email: payload.email,
+          role: payload.role || 'user',
+        },
       };
     } catch (error) {
       return {
@@ -282,7 +286,7 @@ export class AuthService {
     const payload = {
       sub: user.id,
       email: user.email,
-      roles: user.roles || ['user'],
+      role: user.role || 'user',
     };
 
     // Generate tokens
