@@ -38,4 +38,8 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   async del(key: string): Promise<number> {
     return this.redisClient.del(key);
   }
+
+  async scan(cursor: string, pattern: string): Promise<[string, string[]]> {
+    return this.redisClient.scan(cursor, 'MATCH', pattern, 'COUNT', 100);
+  }
 }
