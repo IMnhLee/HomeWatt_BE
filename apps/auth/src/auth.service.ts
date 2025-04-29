@@ -58,14 +58,28 @@ export class AuthService {
 
   async refreshToken(request: AuthDTO.RefreshTokenRequest): Promise<AuthDTO.RefreshTokenResponse> {
     try {
-      // Verify the refresh token exists in Redis
+      // Verify JWT signature
+      try {
+        this.jwtService.verify(request.refreshToken, {
+          secret: this.configService.get('JWT_REFRESH_SECRET'),
+        });
+      } catch (jwtError) {
+        return {
+          status: {
+            code: 401,
+            message: 'Invalid refresh token format'
+          }
+        };
+      }
+
+      // Check if token exists in Redis
       const userId = await this.redisService.get(`refresh_token:${request.refreshToken}`);
       
       if (!userId) {
         return {
           status: {
             code: 401,
-            message: 'Invalid refresh token'
+            message: 'Invalid or revoked refresh token'
           }
         };
       }
