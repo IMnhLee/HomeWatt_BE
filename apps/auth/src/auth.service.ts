@@ -229,7 +229,15 @@ export class AuthService {
   async logout(request: AuthDTO.RefreshTokenRequest): Promise<AuthDTO.LogoutResponse> {
     try {
       // Delete the refresh token from Redis
-      await this.redisService.del(`refresh_token:${request.refreshToken}`);
+      const redisResponse = await this.redisService.del(`refresh_token:${request.refreshToken}`);
+      if (redisResponse !== 1) {
+        return {
+          status: {
+            code: 500,
+            message: 'Failed to logout'
+          }
+        };
+      }
       
       return {
         status: {
