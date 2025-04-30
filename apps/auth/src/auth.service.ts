@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from './user/user.service';
 import { RedisService } from './redis/redis.service';
-import { AuthDTO } from '@app/common';
+import { AuthDTO, UserDTO } from '@app/common';
 import { v4 as uuidv4 } from 'uuid';
 import { ConfigService } from '@nestjs/config';
 import { OAuth2Client } from 'google-auth-library';
@@ -307,12 +307,16 @@ export class AuthService {
 
     // Store refresh token in Redis with expiration
     const refreshExpiration = parseInt(this.configService.get('JWT_REFRESH_EXPIRATION_SECONDS') || '604800', 10);
-    await this.redisService.set(
+    const redisResponse = await this.redisService.set(
       `refresh_token:${refreshToken}`, 
       user.id, 
       'EX', 
       refreshExpiration
     );
+    // Handle Redis error
+    if(redisResponse !== 'OK') {
+        throw new Error('Failed to store refresh token in Redis');
+    }
 
     return {
       accessToken,
