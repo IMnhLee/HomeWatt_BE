@@ -32,10 +32,12 @@ export class AuthService {
 
   async login(request: AuthDTO.LoginRequest): Promise<AuthDTO.LoginResponse> {
     try {
-      const user = await this.userService.ValidateUser({
+      const response = await this.userService.ValidateUser({
         email: request.email,
         password: request.password
       });
+
+      const user = response.data;
 
       const tokens = await this.generateTokens(user);
       return {
