@@ -324,4 +324,24 @@ export class AuthService {
       expiresIn: parseInt(this.configService.get('JWT_ACCESS_EXPIRATION_SECONDS') || '900', 10),
     };
   }
+
+  async invalidateUserTokens(userIdrequest: UserDTO.UserIdRequest): Promise<void> {
+    const userId = userIdrequest.id;
+    const pattern = `refresh_token:*`;
+    let cursor = '0';
+    
+    do {
+      const [newCursor, keys] = await this.redisService.scan(cursor, pattern);
+      
+      cursor = newCursor;
+      
+      // Check each key to see if it belongs to this user
+      for (const key of keys) {
+        const tokenUserId = await this.redisService.get(key);
+        if (tokenUserId === userId) {
+          await this.redisService.del(key);
+        }
+      }
+    } while (cursor !== '0');
+  }
 }
