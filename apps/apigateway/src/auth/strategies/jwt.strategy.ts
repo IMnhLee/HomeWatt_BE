@@ -33,7 +33,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       
       // Trả về đối tượng user từ payload JWT
       return {
-        userId: response.data.sub,
+        id: response.data.sub,
         email: response.data.email,
         role: response.data.role || 'user',
         // Thêm các thông tin khác từ payload nếu cần
