@@ -71,13 +71,14 @@ message ValidateUserRequest {
 message UserInfo {
     string id = 1;
     string email = 2;
-    string phoneNumber = 3;
-    string refreshToken = 4;
-    string role = 5;
-    string googleId = 6;
-    string emailCode = 7;
-    string createdAt = 8;
-    string updatedAt = 9;
+    string username = 3;
+    string phoneNumber = 4;
+    string refreshToken = 5;
+    string role = 6;
+    string googleId = 7;
+    string emailCode = 8;
+    string createdAt = 9;
+    string updatedAt = 10;
 }
 
 // Response containing a single user

@@ -20,9 +20,9 @@ export class UserController implements UserDTO.UserServiceController {
           timestamp: new Date().toISOString(),
         },
         data: users.map(({ password, ...user }) => ({
-        ...user,
-        createdAt: user.createdAt ? user.createdAt.toISOString() : '',
-        updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
+          ...user,
+          createdAt: user.createdAt ? user.createdAt.toISOString() : '',
+          updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
         }))
       };
     }
@@ -51,9 +51,9 @@ export class UserController implements UserDTO.UserServiceController {
           timestamp: new Date().toISOString(),
         },
         data: {
-        ...userWithoutPassword,
-        createdAt: user.createdAt ? user.createdAt.toISOString() : '',
-        updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
+          ...userWithoutPassword,
+          createdAt: user.createdAt ? user.createdAt.toISOString() : '',
+          updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
         } 
       };
     }
@@ -80,9 +80,9 @@ export class UserController implements UserDTO.UserServiceController {
           timestamp: new Date().toISOString(),
         },
         data: {
-        ...userWithoutPassword,
-        createdAt: user.createdAt ? user.createdAt.toISOString() : '',
-        updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
+          ...userWithoutPassword,
+          createdAt: user.createdAt ? user.createdAt.toISOString() : '',
+          updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
         } 
       };
     }
@@ -108,9 +108,9 @@ export class UserController implements UserDTO.UserServiceController {
           timestamp: new Date().toISOString(),
         },
         data: {
-        ...userWithoutPassword,
-        createdAt: user.createdAt ? user.createdAt.toISOString() : '',
-        updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
+          ...userWithoutPassword,
+          createdAt: user.createdAt ? user.createdAt.toISOString() : '',
+          updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
         } 
       };
     }
@@ -137,9 +137,9 @@ export class UserController implements UserDTO.UserServiceController {
           timestamp: new Date().toISOString(),
         },
         data: {
-        ...userWithoutPassword,
-        createdAt: user.createdAt ? user.createdAt.toISOString() : '',
-        updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
+          ...userWithoutPassword,
+          createdAt: user.createdAt ? user.createdAt.toISOString() : '',
+          updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
         } 
       };
     }
@@ -191,9 +191,9 @@ export class UserController implements UserDTO.UserServiceController {
           timestamp: new Date().toISOString(),
         },
         data: {
-        ...userWithoutPassword,
-        createdAt: user.createdAt ? user.createdAt.toISOString() : '',
-        updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
+          ...userWithoutPassword,
+          createdAt: user.createdAt ? user.createdAt.toISOString() : '',
+          updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
         },
       };
     } catch (error) {
