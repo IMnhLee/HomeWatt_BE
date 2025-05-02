@@ -61,6 +61,7 @@ export interface ValidateUserRequest {
 export interface UserInfo {
   id: string;
   email: string;
+  username: string;
   phoneNumber: string;
   refreshToken: string;
   role: string;
