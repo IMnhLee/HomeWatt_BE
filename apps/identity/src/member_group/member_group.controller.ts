@@ -1,80 +1,223 @@
-import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Put, Req, UnauthorizedException } from '@nestjs/common';
+import { Controller } from '@nestjs/common';
 import { MemberGroupService } from './member_group.service';
-import { GroupIdParam } from '../group/dto/groupId.param';
-import { UserIdParam } from '../user/dto/userId.param';
 import { UserService } from '../user/user.service';
 import { MemberRole } from './enities/member_group.entity';
 import { UserRole } from '../user/entities/user.entity';
-import { GroupService } from '../group/group.service';
+import { MemberITF } from '@app/common';
 
-@Controller('member-group')
-export class MemberGroupController {
+@Controller()
+@MemberITF.MemberGroupServiceControllerMethods()
+export class MemberGroupController implements MemberITF.MemberGroupServiceController {
     constructor(
         private readonly memberGroupService: MemberGroupService,
         private readonly userService: UserService,
-        private readonly groupService: GroupService,
     ) {}
 
-    @Post(':groupId/:userId')
-    async addMemberToGroup(
-        @Param('groupId') groupId: GroupIdParam, 
-        @Param('userId') userId: UserIdParam,
-        @Req() request,
-    ) {
-        // Kiểm tra xem người dùng có quyền thêm thành viên vào nhóm hay không
-        const thisMembership = await this.memberGroupService.FindByUserIdAndGroupId(request.user, groupId);
+    async addMemberToGroup(request: MemberITF.MemberRequest): Promise<MemberITF.MemberResponse> {
+        try {
+            // Extract parameters from gRPC request
+            const groupId = { id: request.groupId };
+            const userId = { id: request.userId };
+            const requestor = request.requestor;
 
-        if (thisMembership.role !== MemberRole.OWNER && request.role !== UserRole.ADMIN) {
-            throw new UnauthorizedException('You do not have permission to add members to this group.');
+            if (!requestor) {
+                return {
+                    status: { code: 403, message: 'Unauthorized' },
+                };
+            }
+
+            // Check if user has permission to add members
+            const thisMembership = await this.memberGroupService.FindByUserIdAndGroupId(
+                { id: requestor.id }, 
+                groupId
+            );
+
+            if (thisMembership.role !== MemberRole.OWNER && requestor.role !== UserRole.ADMIN) {
+                return {
+                    status: { code: 403, message: 'You do not have permission to add members to this group.' },
+                };
+            }
+
+            const user = await this.userService.findOneById(userId);
+            const memberData = await this.memberGroupService.addMemberToGroup(groupId, user);
+
+            return {
+                status: { code: 200, message: 'Member added successfully' },
+                data: {
+                    id: memberData.id,
+                    userId: memberData.userId,
+                    groupId: memberData.groupId,
+                    role: memberData.role,
+                }
+            };
+        } catch (error) {
+            return {
+                status: { 
+                    code: error.status || 400, 
+                    message: error.message || 'Failed to add member', 
+                    error: error.error || undefined 
+                },
+            };
         }
-        const user = await this.userService.findOneById(userId);
-        return this.memberGroupService.addMemberToGroup(groupId, user);
     }
 
-    @Get(':groupId')
-    async getMemberGroup(
-        @Param('groupId') groupId: GroupIdParam, 
-        @Req() request,
-    ) {
-        return await this.memberGroupService.getAllMembersByGroupId(groupId);
+    async getMembersByGroupId(request: MemberITF.GroupIdRequest): Promise<MemberITF.GetMembersResponse> {
+        try {
+            const groupId = { id: request.groupId };
+            const requestor = request.requestor;
+
+            if (!requestor) {
+                return {
+                    status: { code: 403, message: 'Unauthorized' },
+                    data: []
+                };
+            }
+
+            // Check if user has permission to view members
+            const thisMembership = await this.memberGroupService.FindByUserIdAndGroupId(
+                { id: requestor.id }, 
+                groupId
+            );
+
+            if (thisMembership.groupId !== request.groupId && requestor.role !== UserRole.ADMIN) {
+                return {
+                    status: { code: 403, message: 'You do not have permission to view members of this group.' },
+                    data: []
+                };
+            }
+
+            const members = await this.memberGroupService.getAllMembersByGroupId(groupId);
+
+            // Map the members to the expected response format
+            const memberData = members.map(member => ({
+                id: member.id,
+                userId: member.userId,
+                groupId: member.groupId,
+                role: member.role,
+                user: {
+                    id: member.user.id,
+                    email: member.user.email,
+                    username: member.user.username || '',
+                    phoneNumber: member.user.phoneNumber || '',
+                    role: member.user.role
+                }
+            }));
+
+            return {
+                status: { code: 200, message: 'Members retrieved successfully' },
+                data: memberData
+            };
+        } catch (error) {
+            return {
+                status: { 
+                    code: error.status || 400, 
+                    message: error.message || 'Failed to retrieve members', 
+                    error: error.error || undefined
+                },
+                data: []
+            };
+        }
     }
 
-    @Put(':groupId/:userId')
-    async updateGroupRole(
-        @Param('groupId') groupId: GroupIdParam, 
-        @Param('userId') userId: UserIdParam,
-        @Body() role: MemberRole,
-        @Req() request,
-    ) {
-        //Tìm chủ của group
-        const thisMembership = await this.memberGroupService.FindByUserIdAndGroupId(request.user.id, groupId);
+    async updateMemberRole(request: MemberITF.UpdateRoleRequest): Promise<MemberITF.MemberResponse> {
+        try {
+            const groupId = { id: request.groupId };
+            const userId = { id: request.userId };
+            const role = request.role as MemberRole;
+            const requestor = request.requestor;
 
-        if (role === MemberRole.OWNER && request.role !== UserRole.ADMIN) {
-            throw new UnauthorizedException('You do not have permission to update this role.');
-        }
+            if (!requestor) {
+                return {
+                    status: { code: 403, message: 'Unauthorized' },
+                };
+            }
 
-        // Kiểm tra xem người dùng có quyền cập nhật vai trò hay không
-        if (request.role === UserRole.ADMIN || thisMembership.role === MemberRole.OWNER) {
-            const membership = await this.memberGroupService.FindByUserIdAndGroupId(userId, groupId);
-            return this.memberGroupService.updateRole(membership, role);
-        }
-        else {
-            throw new UnauthorizedException('You do not have permission to update this role.');
+            // Find the membership of the requestor
+            const thisMembership = await this.memberGroupService.FindByUserIdAndGroupId(
+                { id: requestor.id }, 
+                groupId
+            );
+
+            if (role === MemberRole.OWNER && requestor.role !== UserRole.ADMIN) {
+                return {
+                    status: { code: 403, message: 'You do not have permission to update this role.' },
+                };
+            }
+
+            // Check if user has permission to update roles
+            if (requestor.role === UserRole.ADMIN || thisMembership.role === MemberRole.OWNER) {
+                const membership = await this.memberGroupService.FindByUserIdAndGroupId(userId, groupId);
+                const updatedMember = await this.memberGroupService.updateRole(membership, role);
+
+                return {
+                    status: { code: 200, message: 'Role updated successfully' },
+                    data: {
+                        id: updatedMember.id,
+                        userId: updatedMember.userId,
+                        groupId: updatedMember.groupId,
+                        role: updatedMember.role,
+                        user: {
+                            id: updatedMember.user.id,
+                            email: updatedMember.user.email,
+                            username: updatedMember.user.username || '',
+                            phoneNumber: updatedMember.user.phoneNumber || '',
+                            role: updatedMember.user.role
+                        }
+                    }
+                };
+            } else {
+                return {
+                    status: { code: 403, message: 'You do not have permission to update this role.' },
+                };
+            }
+        } catch (error) {
+            return {
+                status: { 
+                    code: error.status || 400, 
+                    message: error.message || 'Failed to update role', 
+                    error: error.error || undefined
+                },
+            };
         }
     }
 
-    @Post(':groupId/:userId')
-    async removeMemberFromGroup(
-        @Param('groupId') groupId: GroupIdParam, 
-        @Param('userId') userId: UserIdParam,
-        @Req() request,
-    ) {
-        // Kiểm tra xem người dùng có quyền xóa thành viên khỏi nhóm hay không
-        const thisMembership = await this.memberGroupService.FindByUserIdAndGroupId(request.user, groupId);
+    async removeMemberFromGroup(request: MemberITF.MemberRequest): Promise<MemberITF.RemoveResponse> {
+        try {
+            const groupId = { id: request.groupId };
+            const userId = { id: request.userId };
+            const requestor = request.requestor;
 
-        if (thisMembership.role !== MemberRole.OWNER && request.role !== UserRole.ADMIN) {
-            throw new UnauthorizedException('You do not have permission to remove members from this group.');
+            if (!requestor) {
+                return {
+                    status: { code: 403, message: 'Unauthorized' }
+                };
+            }
+
+            // Check if user has permission to remove members
+            const thisMembership = await this.memberGroupService.FindByUserIdAndGroupId(
+                { id: requestor.id }, 
+                groupId
+            );
+
+            if (thisMembership.role !== MemberRole.OWNER && requestor.role !== UserRole.ADMIN) {
+                return {
+                    status: { code: 403, message: 'You do not have permission to remove members from this group.' }
+                };
+            }
+
+            await this.memberGroupService.removeMemberFromGroup(userId, groupId);
+
+            return {
+                status: { code: 200, message: 'Member removed successfully' }
+            };
+        } catch (error) {
+            return {
+                status: { 
+                    code: error.status || 400, 
+                    message: error.message || 'Failed to remove member', 
+                    error: error.error || undefined 
+                }
+            };
         }
-        return this.memberGroupService.removeMemberFromGroup(userId, groupId);
     }
 }

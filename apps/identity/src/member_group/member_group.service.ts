@@ -12,7 +12,7 @@ export class MemberGroupService {
         private readonly memberGroupRepository: MemberGroupRepository,
     ) {}
 
-    async addMemberToGroup(groupId: GroupIdParam, user: User, role: MemberRole = MemberRole.MEMBER): Promise<MemberGroup> {
+    async addMemberToGroup(groupId: GroupIdParam, user: UserIdParam, role: MemberRole = MemberRole.MEMBER): Promise<MemberGroup> {
         try {
             // Create new membership with composite key
             const memberGroup = new MemberGroup();
