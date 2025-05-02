@@ -1,69 +1,198 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Req } from '@nestjs/common';
+import { Controller } from '@nestjs/common';
 import { GroupService } from './group.service';
-import { CreateGroupRequest } from './dto/creatGroup.request';
-import { UserService } from '../user/user.service';
 import { MemberGroupService } from '../member_group/member_group.service';
 import { MemberRole } from '../member_group/enities/member_group.entity';
-import { GroupIdParam } from './dto/groupId.param';
+import { GroupDTO } from '@app/common';
 
-@Controller('group')
-export class GroupController {
-    constructor(
-        private readonly groupService: GroupService,
-        private readonly memberGroupService: MemberGroupService,
-        private readonly userService: UserService,
-    ) {}
+@Controller()
+@GroupDTO.GroupServiceControllerMethods()
+export class GroupController implements GroupDTO.GroupServiceController {
+  constructor(
+    private readonly groupService: GroupService,
+    private readonly memberGroupService: MemberGroupService,
+  ) {}
 
-    @Post('create')
-    async createGroup(
-        @Body() groupData: CreateGroupRequest,
-        @Req() request
-    ) {
-        const owner = request.user;
-        const newGroup = await this.groupService.createGroup(groupData);
-        return this.memberGroupService.addMemberToGroup({id: newGroup.id}, owner, MemberRole.OWNER);
-    }
+  async createGroup(request: GroupDTO.CreateGroupRequest): Promise<GroupDTO.GroupResponse> {
+    try {
+      if (!request.owner) {
+        return {
+          status: { code: 401, message: 'Unauthorized' }
+        };
+      }
+      const newGroup = await this.groupService.createGroupWithOwner(
+        { name: request.name, description: request.description },
+        { id: request.owner.id }
+      );
 
-    @Get('all')
-    async getAllGroups(@Req() request) {
-        // Check if the user is an admin or has a specific role to view all groups
-        if (request.role !== 'admin') {
-            return { message: 'You do not have permission to view all groups.' };
+      return {
+        status: {
+          code: 200,
+          message: 'Group created successfully'
+        },
+        data: {
+          id: newGroup.id,
+          name: newGroup.name,
+          description: newGroup.description,
         }
-        return this.groupService.findAllGroup();
-    }
-
-    @Get(':id')
-    async getGroupById(@Param() id: GroupIdParam, @Req() request) {
-        // Check if the user is an admin or is a member of group 
-        await this.memberGroupService.FindByUserIdAndGroupId(request.user.id, id);
-        return this.groupService.findGroupById(id);
-    }
-
-    @Put(':id')
-    async updateGroup(
-        @Param() id: GroupIdParam, 
-        @Body() groupData: CreateGroupRequest,
-        @Req() request
-    ) {
-        // Check if the user is an admin or is a member of group 
-        const thisMembership = await this.memberGroupService.FindByUserIdAndGroupId(request.user.id, id);
-        if (thisMembership.role !== MemberRole.OWNER && request.role !== 'admin') {
-            return { message: 'You do not have permission to update this group.' };
+      };
+    } catch (error) {
+      return {
+        status: { 
+          code: error.status || 400, 
+          message: 'Failed to create group', 
+          error: error.message 
         }
-        return this.groupService.updateGroup(id, groupData);
+      };
     }
+  }
 
-    @Delete(':id')
-    async deleteGroup(
-        @Param() id: GroupIdParam, 
-        @Req() request
-    ) {
-        // Check if the user is an admin or is a member of group 
-        const thisMembership = await this.memberGroupService.FindByUserIdAndGroupId(request.user.id, id);
-        if (thisMembership.role !== MemberRole.OWNER && request.role !== 'admin') {
-            return { message: 'You do not have permission to delete this group.' };
-        }
-        return this.groupService.deleteGroup(id);
+  async getAllGroups(request: GroupDTO.GetAllGroupsRequest): Promise<GroupDTO.GetAllGroupsResponse> {
+    try {
+      if (!request.user) {
+        return {
+          status: { code: 401, message: 'Unauthorized' },
+          data: []
+        };
+      }
+      // Check if the user is an admin
+      if (request.user.role !== 'admin') {
+        return {
+          status: {
+            code: 403,
+            message: 'You do not have permission to view all groups.'
+          },
+          data: []
+        };
+      }
+
+      const groups = await this.groupService.findAllGroup();
+      const groupData: GroupDTO.GroupData[] = groups.map(group => ({
+        id: group.id,
+        name: group.name,
+        description: group.description
+      }));
+
+      return {
+        status: { code: 200, message: 'Groups retrieved successfully' },
+        data: groupData
+      };
+    } catch (error) {
+      return {
+        status: {
+          code: error.status,
+          message: 'Failed to retrieve groups',
+          error: error.message
+        },
+        data: []
+      };
     }
+  }
+
+  async getGroupById(request: GroupDTO.GroupIdRequest): Promise<GroupDTO.GroupResponse> {
+    try {
+      if (!request.user) {
+        return {
+          status: { code: 401, message: 'Unauthorized' }
+        };
+      }
+      // Check if user is a member of the group
+      await this.memberGroupService.FindByUserIdAndGroupId(
+        {id: request.user.id}, 
+        { id: request.id }
+      );
+
+      const group = await this.groupService.findGroupById({id: request.id});
+      
+      return {
+        status: { code: 200, message: 'Group retrieved successfully' },
+        data: {
+          id: group.id,
+          name: group.name,
+          description: group.description
+        }
+      };
+    } catch (error) {
+      return {
+        status: { 
+          code: 404, 
+          message: 'Failed to retrieve group', 
+          error: error.message 
+        }
+      };
+    }
+  }
+
+  async updateGroup(request: GroupDTO.UpdateGroupRequest): Promise<GroupDTO.GroupResponse> {
+    try {
+      if (!request.user) {
+        return {
+          status: { code: 401, message: 'Unauthorized' }
+        };
+      }
+      // Check if the user is an admin or group owner
+      const thisMembership = await this.memberGroupService.FindByUserIdAndGroupId(
+        {id: request.user.id}, 
+        { id: request.id }
+      );
+
+      if (thisMembership.role !== MemberRole.OWNER && request.user.role !== 'admin') {
+        return {
+          status: { code: 403, message: 'You do not have permission to update this group.' }
+        };
+      }
+
+      const updatedGroup = await this.groupService.updateGroup(
+        { id: request.id }, 
+        { name: request.name, description: request.description }
+      );
+      
+      return {
+        status: { code: 200, message: 'Group updated successfully' },
+        data: {
+          id: updatedGroup.id,
+          name: updatedGroup.name,
+          description: updatedGroup.description
+        }
+      };
+    } catch (error) {
+      return {
+        status: { 
+          code: 400, 
+          message: 'Failed to update group', 
+          error: error.message 
+        }
+      };
+    }
+  }
+
+  async deleteGroup(request: GroupDTO.GroupIdRequest): Promise<GroupDTO.DeleteGroupResponse> {
+    try {
+      if (!request.user) {
+        return {
+          status: { code: 401, message: 'Unauthorized' }
+        };
+      }
+      // Check if the user is an admin or group owner
+      const thisMembership = await this.memberGroupService.FindByUserIdAndGroupId(
+        { id: request.user.id }, 
+        { id: request.id }
+      );
+
+      if (thisMembership.role !== MemberRole.OWNER && request.user.role !== 'admin') {
+        return {
+          status: { code: 403, message: 'You do not have permission to delete this group.' }
+        };
+      }
+
+      await this.groupService.deleteGroup({ id: request.id });
+      
+      return {
+        status: { code: 200, message: 'Group deleted successfully' }
+      };
+    } catch (error) {
+      return {
+        status: { code: 400, message: 'Failed to delete group', error: error.message }
+      };
+    }
+  }
 }

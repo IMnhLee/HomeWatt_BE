@@ -5,12 +5,16 @@ import { GroupIdParam } from './dto/groupId.param';
 import { User } from '../user/entities/user.entity';
 import { UserIdParam } from '../user/dto/userId.param';
 import { UserGroup } from './entities/user_group.entity';
+import { MemberRole } from '../member_group/enities/member_group.entity';
+import { MemberGroupService } from '../member_group/member_group.service';
+import { GroupDTO } from '@app/common';
 
 @Injectable()
 export class GroupService {
     private readonly logger = new Logger(GroupService.name);
     constructor(
         private readonly groupRepository: GroupRepository,
+        private readonly memberGroupService: MemberGroupService,
     ) {}
 
     async createGroup(createGroupRequest: CreateGroupRequest) {
@@ -22,6 +26,27 @@ export class GroupService {
             throw new BadRequestException('failed to create group')
         }
     }
+
+    async createGroupWithOwner( request: CreateGroupRequest, owner: UserIdParam) {
+        return this.groupRepository.transaction(async () => {
+            //Create the group
+            const newGroup = await this.createGroup(
+                {
+                    name: request.name,
+                    description: request.description,
+                }
+            );
+          
+          //Add the owner to the group
+          await this.memberGroupService.addMemberToGroup(
+            { id: newGroup.id }, 
+            owner, 
+            MemberRole.OWNER
+          );
+      
+          return newGroup;
+        });
+      }
 
     async findAllGroup() {
         return this.groupRepository.findAll();
