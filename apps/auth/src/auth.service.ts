@@ -345,4 +345,35 @@ export class AuthService {
       }
     } while (cursor !== '0');
   }
+
+  async register(request: AuthDTO.RegisterRequest): Promise<AuthDTO.LoginResponse> {
+    try {
+      const response = await this.userService.CreateUser({
+        email: request.email,
+        password: request.password,
+        username: request.username,
+        phoneNumber: request.phoneNumber,
+        address: request.address,
+      });
+      const user = response.data;
+      const tokens = await this.generateTokens(user);
+      
+      return {
+        status: {
+          code: 200,
+          message: 'Registration successful'
+        },
+        data: tokens
+      };
+    } catch (error) {
+        // console.log('error', error);
+        return {
+        status: {
+          code: error.status || 500,
+          message: error.message,
+          error: error.error
+        }
+      };
+    }
+  }
 }

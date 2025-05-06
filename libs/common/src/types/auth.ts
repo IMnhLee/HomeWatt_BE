@@ -96,6 +96,14 @@ export interface JwtPayload {
   role: string;
 }
 
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  username: string;
+  phoneNumber?: string | undefined;
+  address?: string | undefined;
+}
+
 export const AUTH_PACKAGE_NAME = "auth";
 
 /**
@@ -123,6 +131,8 @@ export interface AuthServiceClient {
   /** verify token */
 
   verifyToken(request: VerifyTokenRequest): Observable<VerifyTokenResponse>;
+
+  register(request: RegisterRequest): Observable<LoginResponse>;
 }
 
 /**
@@ -154,11 +164,13 @@ export interface AuthServiceController {
   verifyToken(
     request: VerifyTokenRequest,
   ): Promise<VerifyTokenResponse> | Observable<VerifyTokenResponse> | VerifyTokenResponse;
+
+  register(request: RegisterRequest): Promise<LoginResponse> | Observable<LoginResponse> | LoginResponse;
 }
 
 export function AuthServiceControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ["login", "refreshToken", "logout", "validateGoogleToken", "verifyToken"];
+    const grpcMethods: string[] = ["login", "refreshToken", "logout", "validateGoogleToken", "verifyToken", "register"];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
       GrpcMethod("AuthService", method)(constructor.prototype[method], method, descriptor);

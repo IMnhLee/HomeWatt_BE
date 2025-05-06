@@ -50,4 +50,9 @@ export class AuthService implements OnModuleInit {
   //     this.authService.validateToken({ token })
   //   );
   // }
+
+  async register(registerDto: AuthDTO.RegisterRequest) {
+    const response = await firstValueFrom(this.authService.register(registerDto));
+    return handleMicroserviceResponse(response);
+  }
 }

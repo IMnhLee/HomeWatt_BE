@@ -65,4 +65,10 @@ export class AuthController {
       data: user,
     };
   }
+
+  @Public()
+  @Post('register')
+  async register(@Body() registerRequest: AuthDTO.RegisterRequest) {
+    return this.authService.register(registerRequest);
+  }
 }

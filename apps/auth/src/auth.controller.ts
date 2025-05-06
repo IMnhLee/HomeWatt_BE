@@ -51,4 +51,8 @@ export class AuthController implements AuthDTO.AuthServiceController {
   async verifyToken(verifyRequest: AuthDTO.VerifyTokenRequest) {
     return this.authService.verifyToken(verifyRequest);
   }
+
+  async register(registerRequest: AuthDTO.RegisterRequest) {
+    return this.authService.register(registerRequest);
+  }
 }
