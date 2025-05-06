@@ -33,6 +33,7 @@ export class GroupController implements GroupDTO.GroupServiceController {
           id: newGroup.id,
           name: newGroup.name,
           description: newGroup.description,
+          members: []
         }
       };
     } catch (error) {
@@ -55,21 +56,22 @@ export class GroupController implements GroupDTO.GroupServiceController {
         };
       }
       // Check if the user is an admin
-      if (request.user.role !== 'admin') {
-        return {
-          status: {
-            code: 403,
-            message: 'You do not have permission to view all groups.'
-          },
-          data: []
-        };
-      }
+      // if (request.user.role !== 'admin') {
+      //   return {
+      //     status: {
+      //       code: 403,
+      //       message: 'You do not have permission to view all groups.'
+      //     },
+      //     data: []
+      //   };
+      // }
 
       const groups = await this.groupService.findAllGroup();
-      const groupData: GroupDTO.GroupData[] = groups.map(group => ({
+      const groupData  = groups.map(group => ({
         id: group.id,
         name: group.name,
-        description: group.description
+        description: group.description,
+        members: []
       }));
 
       return {
@@ -102,13 +104,22 @@ export class GroupController implements GroupDTO.GroupServiceController {
       );
 
       const group = await this.groupService.findGroupById({id: request.id});
+      const response = await this.memberGroupService.getAllMembersByGroupId({id: group.id});
+      const members = response.map(member => ({
+        id: member.userId,
+        username: member.user.username,
+        email: member.user.email,
+        phoneNumber: member.user.phoneNumber,
+        groupRole: member.role
+      }))
       
       return {
         status: { code: 200, message: 'Group retrieved successfully' },
         data: {
           id: group.id,
           name: group.name,
-          description: group.description
+          description: group.description,
+          members: members
         }
       };
     } catch (error) {
@@ -151,7 +162,8 @@ export class GroupController implements GroupDTO.GroupServiceController {
         data: {
           id: updatedGroup.id,
           name: updatedGroup.name,
-          description: updatedGroup.description
+          description: updatedGroup.description,
+          members: []
         }
       };
     } catch (error) {

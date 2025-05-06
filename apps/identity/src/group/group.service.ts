@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger, NotFoundException, forwardRef } from '@nestjs/common';
 import { GroupRepository } from './group.repository';
 import { CreateGroupRequest } from './dto/creatGroup.request';
 import { GroupIdParam } from './dto/groupId.param';
@@ -14,6 +14,7 @@ export class GroupService {
     private readonly logger = new Logger(GroupService.name);
     constructor(
         private readonly groupRepository: GroupRepository,
+        @Inject(forwardRef(() => MemberGroupService))
         private readonly memberGroupService: MemberGroupService,
     ) {}
 
@@ -39,8 +40,8 @@ export class GroupService {
           
           //Add the owner to the group
           await this.memberGroupService.addMemberToGroup(
-            { id: newGroup.id }, 
-            owner, 
+            { id: newGroup.id },
+            owner,
             MemberRole.OWNER
           );
       
