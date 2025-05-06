@@ -87,7 +87,8 @@ export class AuthService {
       }
 
       // Get the user and generate new tokens
-      const user = await this.userService.GetUserById({ id: userId });
+      const response = await this.userService.GetUserById({ id: userId });
+      const user = response.data;
       
       // Delete the old refresh token
       await this.redisService.del(`refresh_token:${request.refreshToken}`);
