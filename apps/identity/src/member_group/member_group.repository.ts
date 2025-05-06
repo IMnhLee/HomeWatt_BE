@@ -4,11 +4,14 @@ import { MemberGroup } from "./enities/member_group.entity";
 import { Repository } from "typeorm";
 import { UserIdParam } from "../user/dto/userId.param";
 import { GroupIdParam } from "../group/dto/groupId.param";
+import { CreateMemberGroupRequest } from "./dto/creatMemberGroup.request";
+import { InjectRepository } from "@nestjs/typeorm";
 
 export class MemberGroupRepository extends AbstractRepository<MemberGroup> {
     protected readonly logger = new Logger(MemberGroupRepository.name);
     
     constructor(
+        @InjectRepository(MemberGroup)
         protected readonly repository: Repository<MemberGroup>,
     ) {
         super(repository);
@@ -21,7 +24,8 @@ export class MemberGroupRepository extends AbstractRepository<MemberGroup> {
         return (result.affected ?? 0) > 0;
     }
 
-    async save(memberGroup: MemberGroup): Promise<MemberGroup> {
+    async save(memberGroup: CreateMemberGroupRequest): Promise<MemberGroup> {
+        console.log('Saving member group:', memberGroup);
         return this.repository.save(memberGroup);
     }
 }

@@ -3,6 +3,8 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import * as Joi from 'joi';
+import { GroupModule } from './group/group.module';
+import { MemberModule } from './member/member.module';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import * as Joi from 'joi';
     }),
     UserModule,
     AuthModule,
+    GroupModule,
+    MemberModule
   ],
   controllers: [],
   providers: [],

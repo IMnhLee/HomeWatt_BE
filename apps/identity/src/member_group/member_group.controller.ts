@@ -124,6 +124,7 @@ export class MemberGroupController implements MemberITF.MemberGroupServiceContro
             const groupId = { id: request.groupId };
             const userId = { id: request.userId };
             const role = request.role as MemberRole;
+            console.log('Role:', role, 'GroupId:', groupId, 'UserId:', userId);
             const requestor = request.requestor;
 
             if (!requestor) {
@@ -146,8 +147,7 @@ export class MemberGroupController implements MemberITF.MemberGroupServiceContro
 
             // Check if user has permission to update roles
             if (requestor.role === UserRole.ADMIN || thisMembership.role === MemberRole.OWNER) {
-                const membership = await this.memberGroupService.FindByUserIdAndGroupId(userId, groupId);
-                const updatedMember = await this.memberGroupService.updateRole(membership, role);
+                const updatedMember = await this.memberGroupService.updateRole(userId, groupId, {role});
 
                 return {
                     status: { code: 200, message: 'Role updated successfully' },

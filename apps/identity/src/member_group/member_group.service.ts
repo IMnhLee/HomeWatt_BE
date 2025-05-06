@@ -4,6 +4,7 @@ import { GroupIdParam } from '../group/dto/groupId.param';
 import { UserIdParam } from '../user/dto/userId.param';
 import { MemberGroup, MemberRole } from './enities/member_group.entity';
 import { User } from '../user/entities/user.entity';
+import { RoleDTO } from './dto/roleDTO';
 
 @Injectable()
 export class MemberGroupService {
@@ -12,15 +13,17 @@ export class MemberGroupService {
         private readonly memberGroupRepository: MemberGroupRepository,
     ) {}
 
-    async addMemberToGroup(groupId: GroupIdParam, user: UserIdParam, role: MemberRole = MemberRole.MEMBER): Promise<MemberGroup> {
+    async addMemberToGroup(groupId: GroupIdParam, userId: UserIdParam, role: MemberRole = MemberRole.MEMBER): Promise<MemberGroup> {
         try {
+            console.log('Adding member to group:', { groupId, userId, role });
             // Create new membership with composite key
-            const memberGroup = new MemberGroup();
-            memberGroup.userId = user.id;
-            memberGroup.groupId = groupId.id;
-            memberGroup.role = role;
-
-            return await this.memberGroupRepository.save(memberGroup);
+            const data =
+            {
+                userId: userId.id,
+                groupId: groupId.id,
+                role: role,
+            }
+            return await this.memberGroupRepository.create(data)
         }
         catch (error) {
             this.logger.error(`Failed to add member to group: ${error.message}`);
@@ -34,7 +37,8 @@ export class MemberGroupService {
                 where: {
                     userId: userId.id,
                     groupId: groupId.id,
-                }
+                },
+                relations: ['user', 'group'], // Assuming you want to load the user and group relations as well
             });
         }
         catch (error) {
@@ -58,10 +62,22 @@ export class MemberGroupService {
         }
     }
 
-    async updateRole(membership: MemberGroup, role: MemberRole): Promise<MemberGroup> {
-        membership.role = role;
+    async updateRole(userId: UserIdParam, groupId: GroupIdParam, role: RoleDTO): Promise<MemberGroup> {
         try {
-            return await this.memberGroupRepository.save(membership);
+            const criteria = {
+                userId: userId.id,
+                groupId: groupId.id,
+            };
+            const data = {
+                role: role.role,
+            };
+            const updated = await this.memberGroupRepository.updateBy(criteria, data);
+            if (!updated) {
+                this.logger.warn(`Membership not found for userId: ${userId.id}, groupId: ${groupId.id}`);
+                throw new NotFoundException('Membership not found');
+            }
+            // Get and return the updated membership
+            return await this.FindByUserIdAndGroupId(userId, groupId);
         }
         catch (error) {
             this.logger.error(`Failed to update membership role: ${error.message}`);

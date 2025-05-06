@@ -4,7 +4,7 @@ import { UserGroup } from '../../group/entities/user_group.entity';
 import { AbstractEntity } from '@app/common';
 
 export enum MemberRole {
-  OWNER = 'onwer',
+  OWNER = 'owner',
   MEMBER = 'member',
   GUEST = 'guest'
 }
