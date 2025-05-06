@@ -61,9 +61,9 @@ services:
       - REDIS_PORT=6379
       - JWT_ACCESS_SECRET=your_access_secret
       - JWT_REFRESH_SECRET=your_refresh_secret
-      - JWT_ACCESS_EXPIRATION=15m
+      - JWT_ACCESS_EXPIRATION=1d
       - JWT_REFRESH_EXPIRATION=7d
-      - JWT_ACCESS_EXPIRATION_SECONDS=900
+      - JWT_ACCESS_EXPIRATION_SECONDS=86400
       - JWT_REFRESH_EXPIRATION_SECONDS=604800
       - GOOGLE_CLIENT_ID=your_google_client_id
     depends_on:
