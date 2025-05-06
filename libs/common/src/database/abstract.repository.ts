@@ -116,4 +116,15 @@ export abstract class AbstractRepository<T extends AbstractEntity> implements IR
     });
     return count > 0;
   }
+
+  async updateBy(criteria: FindOptionsWhere<T>, data: QueryDeepPartialEntity<T>): Promise<boolean> {
+    try {
+      const result = await this.repository.update(criteria, data);
+      this.logger.log(`Updated ${result.affected} entities`);
+      return (result.affected ?? 0) > 0;
+    } catch (error) {
+      this.logger.error(`Failed to update entities: ${error.message}`);
+      throw error;
+    }
+  }
 }
