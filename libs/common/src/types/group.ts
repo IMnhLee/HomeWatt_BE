@@ -46,6 +46,15 @@ export interface GroupData {
   id: string;
   name: string;
   description: string;
+  members: Member[];
+}
+
+export interface Member {
+  id: string;
+  username: string;
+  email: string;
+  phoneNumber: string;
+  groupRole: string;
 }
 
 /** Group response object */

@@ -55,6 +55,15 @@ message GroupData {
     string id = 1;
     string name = 2;
     string description = 3;
+    repeated Member members = 4;
+}
+
+message Member {
+    string id = 1;
+    string username = 2;
+    string email = 3;
+    string phoneNumber = 4;
+    string groupRole = 5;
 }
 
 // Group response object
