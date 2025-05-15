@@ -18,7 +18,9 @@
       "sourceRoot": "./",
       "compilerOptions": {
         "tsConfigPath": "apps/apigateway/tsconfig.app.json",
-        "assets": ["proto/*.proto"],
+        "assets": [
+          "proto/*.proto"
+        ],
         "watchAssets": true
       }
     },
@@ -29,7 +31,9 @@
       "sourceRoot": "./",
       "compilerOptions": {
         "tsConfigPath": "apps/auth/tsconfig.app.json",
-        "assets": ["proto/*.proto"],
+        "assets": [
+          "proto/*.proto"
+        ],
         "watchAssets": true
       }
     },
@@ -42,6 +46,15 @@
         "tsConfigPath": "libs/common/tsconfig.lib.json"
       }
     },
+    "device": {
+      "type": "application",
+      "root": "apps/device",
+      "entryFile": "main",
+      "sourceRoot": "apps/device/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/device/tsconfig.app.json"
+      }
+    },
     "identity": {
       "type": "application",
       "root": "apps/identity",
@@ -49,7 +62,9 @@
       "sourceRoot": "./",
       "compilerOptions": {
         "tsConfigPath": "apps/identity/tsconfig.app.json",
-        "assets": ["proto/*.proto"],
+        "assets": [
+          "proto/*.proto"
+        ],
         "watchAssets": true
       }
     }
