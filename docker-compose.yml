@@ -9,14 +9,14 @@ services:
       - '3000:3000'
     env_file:
       - ./apps/apigateway/.env
-    environment:
-      - AUTH_GRPC_URL=auth:3001
-      - IDENTITY_GRPC_URL=identity:5000
-      - PORT=3000
-      - JWT_ACCESS_SECRET=your_access_secret
-      - GOOGLE_CLIENT_ID=your_google_client_id
-      - GOOGLE_CLIENT_SECRET=your_google_client_secret
-      - GOOGLE_CALLBACK_URL=http://localhost:3000/auth/google/callback
+    # environment:
+    #   - AUTH_GRPC_URL=auth:3001
+    #   - IDENTITY_GRPC_URL=identity:5000
+    #   - PORT=3000
+    #   - JWT_ACCESS_SECRET=your_access_secret
+    #   - GOOGLE_CLIENT_ID=your_google_client_id
+    #   - GOOGLE_CLIENT_SECRET=your_google_client_secret
+    #   - GOOGLE_CALLBACK_URL=http://localhost:3000/auth/google/callback
     depends_on:
       - auth
       - identity
@@ -55,17 +55,17 @@ services:
       - '50052:50052' # gRPC port
     env_file:
       - ./apps/auth/.env
-    environment:
-      - IDENTITY_GRPC_URL=identity:5000
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - JWT_ACCESS_SECRET=your_access_secret
-      - JWT_REFRESH_SECRET=your_refresh_secret
-      - JWT_ACCESS_EXPIRATION=1d
-      - JWT_REFRESH_EXPIRATION=7d
-      - JWT_ACCESS_EXPIRATION_SECONDS=86400
-      - JWT_REFRESH_EXPIRATION_SECONDS=604800
-      - GOOGLE_CLIENT_ID=your_google_client_id
+    # environment:
+    #   - IDENTITY_GRPC_URL=identity:5000
+    #   - REDIS_HOST=redis
+    #   - REDIS_PORT=6379
+    #   - JWT_ACCESS_SECRET=your_access_secret
+    #   - JWT_REFRESH_SECRET=your_refresh_secret
+    #   - JWT_ACCESS_EXPIRATION=1d
+    #   - JWT_REFRESH_EXPIRATION=7d
+    #   - JWT_ACCESS_EXPIRATION_SECONDS=86400
+    #   - JWT_REFRESH_EXPIRATION_SECONDS=604800
+    #   - GOOGLE_CLIENT_ID=your_google_client_id
     depends_on:
       - identity
       - redis
@@ -73,6 +73,32 @@ services:
       - .:/usr/src/app
       - /usr/src/app/node_modules
 
+  mail-sender:
+    build:
+      context: .
+      dockerfile: ./apps/mail-sender/Dockerfile
+      target: development
+    command: npm run start:dev-docker mail-sender
+    env_file:
+      - ./apps/mail-sender/.env
+    # environment:
+    #   - RABBIT_MQ_URI=amqp://rabbitmq:5672
+    #   - RABBIT_MQ_MAIL_QUEUE=mail
+    #   - MAIL_HOST=smtp.gmail.com
+    #   - MAIL_PORT=587
+    #   - MAIL_SECURE=false
+    #   - MAIL_USER=levanminh19102003@gmail.com
+    #   - MAIL_PASSWORD=tter uhqf iovn crfa
+    #   - MAIL_FROM_NAME=HomeWatt
+    #   - MAIL_FROM_ADDRESS=noreply@homewatt.com
+    #   - FRONTEND_URL=http://localhost:5173
+    ports:
+      - '50053:50053'
+    depends_on:
+      - rabbitmq
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
   postgres:
     image: postgres:latest
     environment:

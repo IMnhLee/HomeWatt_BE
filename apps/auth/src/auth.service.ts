@@ -45,7 +45,10 @@ export class AuthService {
           code: 200,
           message: 'Login successful'
         },
-        data: tokens
+        data: {
+          tokens: tokens,
+          user: user
+        }
       };
     } catch (error) {
       return {
@@ -216,7 +219,10 @@ export class AuthService {
           code: 200,
           message: 'Google authentication successful'
         },
-        data: tokens
+        data: {
+          tokens: tokens,
+          user: user
+        }
       };
     } catch (error) {
       return {
@@ -363,7 +369,10 @@ export class AuthService {
           code: 200,
           message: 'Registration successful'
         },
-        data: tokens
+        data: {
+          tokens: tokens,
+          user: user
+        }
       };
     } catch (error) {
         // console.log('error', error);
@@ -376,4 +385,6 @@ export class AuthService {
       };
     }
   }
+
+  
 }

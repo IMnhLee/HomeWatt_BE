@@ -67,6 +67,15 @@
         ],
         "watchAssets": true
       }
+    },
+    "mail-sender": {
+      "type": "application",
+      "root": "apps/mail-sender",
+      "entryFile": "main",
+      "sourceRoot": "apps/mail-sender/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/mail-sender/tsconfig.app.json"
+      }
     }
   }
 }

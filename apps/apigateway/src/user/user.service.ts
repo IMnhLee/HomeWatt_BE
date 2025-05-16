@@ -1,5 +1,5 @@
 import { UserDTO } from '@app/common';
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
 import { handleMicroserviceResponse } from '@app/common';
 import { firstValueFrom } from 'rxjs';
@@ -20,7 +20,10 @@ export class UserService implements OnModuleInit {
         return handleMicroserviceResponse(response);
     };
 
-    async GetUserById(id: UserDTO.UserIdRequest) {
+    async GetUserById(id: UserDTO.UserIdRequest, user: any) {
+        if (user.role !== 'admin' && user.id !== id.id) {
+            throw new ForbiddenException('You do not have permission to access this resource');
+        }
         const response = await firstValueFrom(this.userService.getUserById(id));
         return handleMicroserviceResponse(response);
     };
@@ -44,4 +47,19 @@ export class UserService implements OnModuleInit {
         const response = await firstValueFrom(this.userService.deleteUser(id));
         return handleMicroserviceResponse(response);
     };
+
+    async UpdateUserPassword(request: UserDTO.UpdateUserPasswordRequest) {
+        const response = await firstValueFrom(this.userService.updateUserPassword(request));
+        return handleMicroserviceResponse(response);
+    }
+
+    async ForgotPassword(request: UserDTO.ForgotPasswordRequest) {
+        const response = await firstValueFrom(this.userService.forgotPassword(request));
+        return handleMicroserviceResponse(response);
+    }
+
+    async ResetPassword(request: UserDTO.ResetPasswordRequest) {
+        const response = await firstValueFrom(this.userService.resetPassword(request));
+        return handleMicroserviceResponse(response);
+    }
 }

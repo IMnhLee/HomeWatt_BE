@@ -63,7 +63,7 @@ export interface UserInfo {
   email: string;
   username: string;
   phoneNumber: string;
-  refreshToken: string;
+  address: string;
   role: string;
   googleId: string;
   emailCode: string;
@@ -89,10 +89,7 @@ export interface DeleteResponse {
 }
 
 export interface ValidateUserResponse {
-  status:
-    | ResponseStatus
-    | undefined;
-  /** Chỉ có giá trị khi code = true */
+  status: ResponseStatus | undefined;
   data?: UserInfo | undefined;
 }
 
@@ -101,7 +98,30 @@ export interface ResponseStatus {
   code: number;
   message: string;
   error?: string | undefined;
-  timestamp?: string | undefined;
+}
+
+export interface UpdateUserPasswordRequest {
+  id: string;
+  password: string;
+  currentPassword: string;
+}
+
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ForgotPasswordResponse {
+  status: ResponseStatus | undefined;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  email: string;
+  password: string;
+}
+
+export interface ResetPasswordResponse {
+  status: ResponseStatus | undefined;
 }
 
 export const USER_PACKAGE_NAME = "user";
@@ -134,6 +154,16 @@ export interface UserServiceClient {
   /** Validate user */
 
   validateUser(request: ValidateUserRequest): Observable<ValidateUserResponse>;
+
+  /** Update user password */
+
+  updateUserPassword(request: UpdateUserPasswordRequest): Observable<UserResponse>;
+
+  /** Forgot password request */
+
+  forgotPassword(request: ForgotPasswordRequest): Observable<ForgotPasswordResponse>;
+
+  resetPassword(request: ResetPasswordRequest): Observable<ResetPasswordResponse>;
 }
 
 export interface UserServiceController {
@@ -166,6 +196,22 @@ export interface UserServiceController {
   validateUser(
     request: ValidateUserRequest,
   ): Promise<ValidateUserResponse> | Observable<ValidateUserResponse> | ValidateUserResponse;
+
+  /** Update user password */
+
+  updateUserPassword(
+    request: UpdateUserPasswordRequest,
+  ): Promise<UserResponse> | Observable<UserResponse> | UserResponse;
+
+  /** Forgot password request */
+
+  forgotPassword(
+    request: ForgotPasswordRequest,
+  ): Promise<ForgotPasswordResponse> | Observable<ForgotPasswordResponse> | ForgotPasswordResponse;
+
+  resetPassword(
+    request: ResetPasswordRequest,
+  ): Promise<ResetPasswordResponse> | Observable<ResetPasswordResponse> | ResetPasswordResponse;
 }
 
 export function UserServiceControllerMethods() {
@@ -178,6 +224,9 @@ export function UserServiceControllerMethods() {
       "updateUser",
       "deleteUser",
       "validateUser",
+      "updateUserPassword",
+      "forgotPassword",
+      "resetPassword",
     ];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);

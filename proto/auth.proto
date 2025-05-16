@@ -61,9 +61,14 @@ message LoginRequest {
     string password = 2;
 }
 
+message TokenAndUser {
+    TokenData tokens = 1;
+    UserInfo user = 2;
+}
+
 message LoginResponse {
     ResponseStatus status = 1;
-    optional TokenData data = 2;
+    optional TokenAndUser data = 2;
 }
 
 message RefreshTokenRequest {

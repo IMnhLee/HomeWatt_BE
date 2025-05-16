@@ -27,13 +27,12 @@ import { OAuth2Client } from 'google-auth-library';
         JWT_REFRESH_EXPIRATION_SECONDS: Joi.number().default(604800),
         // Redis connection
         REDIS_URL: Joi.string().required(),
+        REDIS_PORT: Joi.number().default(6379),
+        REDIS_HOST: Joi.string().default('localhost'),
         // Google OAuth
         GOOGLE_CLIENT_ID: Joi.string().required(),
         GOOGLE_CLIENT_SECRET: Joi.string().required(),
         GOOGLE_CALLBACK_URL: Joi.string().required(),
-        // RabbitMQ and microservice connection
-        RABBIT_MQ_URI: Joi.string().required(),
-        RABBIT_MQ_IDENTITY_QUEUE: Joi.string().required(),
       }),
       envFilePath: './apps/auth/.env',
     }),

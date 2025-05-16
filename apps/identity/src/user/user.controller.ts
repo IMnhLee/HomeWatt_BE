@@ -17,7 +17,6 @@ export class UserController implements UserDTO.UserServiceController {
         status: {
           code: 200,
           message: 'Get all users success',
-          timestamp: new Date().toISOString(),
         },
         data: users.map(({ password, ...user }) => ({
           ...user,
@@ -32,7 +31,6 @@ export class UserController implements UserDTO.UserServiceController {
           code: error.status || 500,
           message: error.message,
           error: error.error || 'Internal Server Error',
-          timestamp: new Date().toISOString(),
         },
         data: [],
       };
@@ -48,7 +46,6 @@ export class UserController implements UserDTO.UserServiceController {
         status: {
           code: 200,
           message: 'Get user by id success',
-          timestamp: new Date().toISOString(),
         },
         data: {
           ...userWithoutPassword,
@@ -63,7 +60,6 @@ export class UserController implements UserDTO.UserServiceController {
           code: error.status || 500,
           message: error.message,
           error: error.error || 'Internal Server Error',
-          timestamp: new Date().toISOString(),
         },
       };
     }
@@ -77,7 +73,6 @@ export class UserController implements UserDTO.UserServiceController {
         status: {
           code: 200,
           message: 'Get user by email success',
-          timestamp: new Date().toISOString(),
         },
         data: {
           ...userWithoutPassword,
@@ -92,7 +87,6 @@ export class UserController implements UserDTO.UserServiceController {
           code: error.status || 500,
           message: error.message,
           error: error.error || 'Internal Server Error',
-          timestamp: new Date().toISOString(),
         },
       };
     }
@@ -105,7 +99,6 @@ export class UserController implements UserDTO.UserServiceController {
         status: {
           code: 200,
           message: 'Create user success',
-          timestamp: new Date().toISOString(),
         },
         data: {
           ...userWithoutPassword,
@@ -120,7 +113,6 @@ export class UserController implements UserDTO.UserServiceController {
           code: error.status || 500,
           message: error.message,
           error: error.error || 'Internal Server Error',
-          timestamp: new Date().toISOString(),
         },
       };
     }
@@ -134,7 +126,6 @@ export class UserController implements UserDTO.UserServiceController {
         status: {
           code: 200,
           message: 'Success',
-          timestamp: new Date().toISOString(),
         },
         data: {
           ...userWithoutPassword,
@@ -149,7 +140,6 @@ export class UserController implements UserDTO.UserServiceController {
           code: error.status || 500,
           message: error.message,
           error: error.error || 'Internal Server Error',
-          timestamp: new Date().toISOString(),
         },
       };
     }
@@ -162,7 +152,6 @@ export class UserController implements UserDTO.UserServiceController {
         status: {
           code: 200,
           message: response.message,
-          timestamp: new Date().toISOString(),
         },
       };
     }
@@ -172,7 +161,6 @@ export class UserController implements UserDTO.UserServiceController {
           code: error.status || 500,
           message: error.message,
           error: error.error || 'Internal Server Error',
-          timestamp: new Date().toISOString(),
         },
       };
     }
@@ -188,7 +176,6 @@ export class UserController implements UserDTO.UserServiceController {
         status: {
           code: 200,
           message: 'User is valid',
-          timestamp: new Date().toISOString(),
         },
         data: {
           ...userWithoutPassword,
@@ -203,7 +190,76 @@ export class UserController implements UserDTO.UserServiceController {
           code: error.status || 500,
           message: error.message,
           error: error.error || 'Internal Server Error',
-          timestamp: new Date().toISOString(),
+        },
+      };
+    }
+  }
+
+  async updateUserPassword(request: UserDTO.UpdateUserPasswordRequest): Promise<UserDTO.UserResponse> {
+    try {
+      const { id, ...updatePasswordRequest } = request;
+      const user = await this.userService.updatePassword( {id}, updatePasswordRequest);
+      const { password, ...userWithoutPassword } = user;
+      return {
+        status: {
+          code: 200,
+          message: 'Update password success',
+        },
+        data: {
+          ...userWithoutPassword,
+          createdAt: user.createdAt ? user.createdAt.toISOString() : '',
+          updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
+        } 
+      };
+    }
+    catch (error) {
+      return {
+        status: {
+          code: error.status || 500,
+          message: error.message,
+          error: error.error || 'Internal Server Error',
+        },
+      };
+    }
+  }
+
+  async forgotPassword(request: UserDTO.ForgotPasswordRequest): Promise<UserDTO.ForgotPasswordResponse> {
+    try {
+      const response = await this.userService.forgotPassword(request);
+      return {
+        status: {
+          code: 200,
+          message: response.message,
+        },
+      };
+    }
+    catch (error) {
+      return {
+        status: {
+          code: error.status || 500,
+          message: error.message,
+          error: error.error || 'Internal Server Error',
+        },
+      };
+    }
+  }
+
+  async resetPassword(request: UserDTO.ResetPasswordRequest): Promise<UserDTO.ResetPasswordResponse> {
+    try {
+      const response = await this.userService.resetPassword(request.token, request.email, request.password);
+      return {
+        status: {
+          code: 200,
+          message: response.message,
+        },
+      };
+    }
+    catch (error) {
+      return {
+        status: {
+          code: error.status || 500,
+          message: error.message,
+          error: error.error || 'Internal Server Error',
         },
       };
     }

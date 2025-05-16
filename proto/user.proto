@@ -23,6 +23,14 @@ service UserService {
 
     //Validate user
     rpc ValidateUser (ValidateUserRequest) returns (ValidateUserResponse);
+
+    //Update user password
+    rpc UpdateUserPassword (UpdateUserPasswordRequest) returns (UserResponse);
+
+    //Forgot password request
+    rpc ForgotPassword (ForgotPasswordRequest) returns (ForgotPasswordResponse);
+
+    rpc ResetPassword (ResetPasswordRequest) returns (ResetPasswordResponse);
 }
 
 // Empty message for requests that don't need parameters
@@ -73,7 +81,7 @@ message UserInfo {
     string email = 2;
     string username = 3;
     string phoneNumber = 4;
-    string refreshToken = 5;
+    string address = 5;
     string role = 6;
     string googleId = 7;
     string emailCode = 8;
@@ -100,7 +108,7 @@ message DeleteResponse {
 
 message ValidateUserResponse {
     ResponseStatus status = 1;
-    optional UserInfo data = 2; // Chỉ có giá trị khi code = true
+    optional UserInfo data = 2;
 }
 
 message ResponseStatus {
@@ -108,5 +116,28 @@ message ResponseStatus {
   int32 code = 1;
   string message = 2;
   optional string error = 3;
-  optional string timestamp = 4;
+}
+
+message UpdateUserPasswordRequest {
+    string id = 1;
+    string password = 2;
+    string currentPassword = 3;
+} 
+
+message ForgotPasswordRequest {
+    string email = 1;
+}
+
+message ForgotPasswordResponse {
+    ResponseStatus status = 1;
+}
+
+message ResetPasswordRequest {
+    string token = 1;
+    string email = 2;
+    string password = 3;
+}
+
+message ResetPasswordResponse {
+    ResponseStatus status = 1;
 }

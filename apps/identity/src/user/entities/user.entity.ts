@@ -1,6 +1,5 @@
 import { AbstractEntity } from "@app/common";
 import { Column, Entity, OneToMany } from "typeorm";
-import { MemberGroup } from "../../member_group/enities/member_group.entity";
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -31,6 +30,9 @@ export class User extends AbstractEntity {
     @Column({type: "varchar", nullable: true,})
     emailCode: string;
 
+    @Column({nullable: true})
+    emailCodeExpire: Date;
+
     @Column({
         type: 'enum',
         enum: UserRole,
@@ -41,6 +43,7 @@ export class User extends AbstractEntity {
     @Column({type: "varchar", nullable: true,})
     googleId: string;
 
-    @OneToMany(() => MemberGroup, memberGroup => memberGroup.user)
-    memberships: MemberGroup[];
+    //status user active or inactive
+    @Column({type: "boolean", default: true})
+    active: boolean;
 }

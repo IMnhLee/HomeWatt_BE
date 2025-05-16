@@ -21,10 +21,7 @@ export class AuthController {
     }
     
     return {
-      status: {
-        code: 200,
-        message: 'Login successful',
-      },
+      message: 'Login successful',
       data: req.user,
     };
   }

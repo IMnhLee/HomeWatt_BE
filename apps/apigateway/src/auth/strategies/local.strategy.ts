@@ -16,10 +16,6 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     //   throw new UnauthorizedException(response.status?.message);
     // }
     
-    return {
-      accessToken: response.data.accessToken,
-      refreshToken: response.data.refreshToken,
-      expiresIn: response.data.expiresIn
-    };
+    return response.data;
   }
 }

@@ -41,9 +41,14 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface TokenAndUser {
+  tokens: TokenData | undefined;
+  user: UserInfo | undefined;
+}
+
 export interface LoginResponse {
   status: ResponseStatus | undefined;
-  data?: TokenData | undefined;
+  data?: TokenAndUser | undefined;
 }
 
 export interface RefreshTokenRequest {

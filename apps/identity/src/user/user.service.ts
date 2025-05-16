@@ -1,14 +1,20 @@
-import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Inject, Injectable, Logger, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { UserRepository } from './user.repository';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
-
+import * as crypto from 'crypto';
 import {UserDTO} from '@app/common';
+import { UpdatePasswordRequest } from './dto/updatePasssword.request';
+import { ClientProxy } from '@nestjs/microservices';
 
 @Injectable()
 export class UserService {
   private readonly logger = new Logger(UserService.name);
-  constructor(private readonly userRepository: UserRepository) {}
+
+  constructor(
+    private readonly userRepository: UserRepository,
+    @Inject("MAIL") private mailClient: ClientProxy,
+  ) {}
 
   async findAll() {
     return this.userRepository.findAll();
@@ -88,15 +94,98 @@ export class UserService {
     return true;
   }
 
-  // async getAllGroupOfUser(id: UserIdParam) {
-  //   try {
-  //     const user = await this.userRepository.findOneById(id.id, { relations: ['groups'] });
-  //     if (!user) {
-  //       throw new NotFoundException('User not found.');
-  //     }
-  //     return user.groups;
-  //   } catch (error) {
-  //     throw new UnprocessableEntityException('Failed to get groups of user.');
-  //   }
-  // }
+  async updatePassword(id: UserDTO.UserIdRequest, request: UpdatePasswordRequest) {
+    const { password, currentPassword } = request;
+    const user = await this.userRepository.findOneById(id.id);
+    if (!user) {
+      throw new NotFoundException('User not found.');
+    }
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isPasswordValid) {
+      throw new BadRequestException('Invalid current password.');
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const result = await this.userRepository.update(id.id, { password: hashedPassword });
+    if (!result) {
+      throw new NotFoundException('User not found.');
+    }
+    return result;
+  }
+
+  async forgotPassword(email: UserDTO.UserEmailRequest) {
+    try {
+      const user = await this.userRepository.findOneBy({ where: email });
+      if (!user) {
+        throw new NotFoundException('User not found.');
+      }
+      if (user.active === false) {
+        throw new UnprocessableEntityException('User is inactive.');
+      }
+      if (user.googleId) {
+        throw new UnprocessableEntityException('User registered with Google. Cannot reset password.');
+      }
+
+      const resetToken = crypto.randomBytes(32).toString('hex');
+      const hashedToken = await bcrypt.hash(resetToken, 10);
+
+      const expireTime = new Date();
+      expireTime.setMinutes(expireTime.getMinutes() + 15); // Token expires in 15 minutes
+
+      await this.userRepository.update(
+        user.id,
+        {
+          emailCode: hashedToken,
+          emailCodeExpire: expireTime,
+        }
+      );
+
+      this.mailClient.emit('send_forgot_password_mail', {
+        email: user.email,
+        resetToken,
+        username: user.username,
+      });
+
+      return {
+        message: 'Reset password email sent successfully.',
+      }
+    }
+    catch (error) {
+      this.logger.error(`Error in forgotPassword: ${error.message}`);
+      throw new NotFoundException('User not found.');
+    }
+  }
+
+  async resetPassword(token: string, email:string, password: string) {
+    
+    const user = await this.userRepository.findOneBy({ where: { email: email } });
+    if (!user) {
+      throw new NotFoundException('User not found.');
+    }
+    if (user.active === false) {
+      throw new UnprocessableEntityException('User is inactive.');
+    }
+
+    const isTokenValid = await bcrypt.compare(token, user.emailCode);
+
+    if (!isTokenValid) {
+      throw new UnprocessableEntityException('Invalid token.');
+    }
+
+    if (user.emailCodeExpire < new Date()) {
+      throw new UnprocessableEntityException('Token expired.');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const expireTime = new Date();
+    await this.userRepository.update(user.id, {
+      password: hashedPassword,
+      emailCode: "",
+      emailCodeExpire: expireTime,
+    });
+
+    return {
+      message: 'Password reset successfully.',
+    }
+  }
+    
 }
