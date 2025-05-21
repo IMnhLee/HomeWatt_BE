@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package room;
+
+service RoomService {
+  // Add a new room to a floor
+  rpc addRoom (AddRoomRequest) returns (RoomResponse);
+  
+  // Edit an existing room
+  rpc editRoom (EditRoomRequest) returns (RoomResponse);
+  
+  // Delete a room
+  rpc deleteRoom (DeleteRoomRequest) returns (DeleteRoomResponse);
+}
+
+// Request to add a new room
+message AddRoomRequest {
+  string name = 1;
+  string floorId = 2;
+}
+
+// Request to edit a room
+message EditRoomRequest {
+  string roomId = 1;
+  string name = 2;
+}
+
+// Request to delete a room
+message DeleteRoomRequest {
+  string roomId = 1;
+}
+
+// Response containing room data
+message RoomResponse {
+  StatusInfo status = 1;
+  optional RoomData data = 2;
+}
+
+// Status information
+message StatusInfo {
+  int32 code = 1;
+  string message = 2;
+  optional string error = 3;
+}
+
+// Room data
+message RoomData {
+  string id = 1;
+  string name = 2;
+  string floorId = 3;
+}
+
+message DeleteRoomResponse {
+    StatusInfo status = 1;
+}

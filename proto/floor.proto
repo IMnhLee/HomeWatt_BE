@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+package floor;
+
+service FloorService {
+  // Get all floors for a user
+  rpc getAllFloor (GetAllFloorRequest) returns (FloorsResponse);
+
+  // Get all floors and room
+  rpc getAllFloorAndRoom (GetAllFloorRequest) returns (FloorsResponse);
+  
+  // Add a new floor
+  rpc addFloor (AddFloorRequest) returns (FloorResponse);
+  
+  // Edit an existing floor
+  rpc editFloor (EditFloorRequest) returns (FloorResponse);
+  
+  // Delete a floor
+  rpc deleteFloor (DeleteFloorRequest) returns (FloorResponse);
+}
+
+// Request to get all floors for a user
+message GetAllFloorRequest {
+  string userId = 1;
+}
+
+// Request to add a new floor
+message AddFloorRequest {
+  string userId = 1;
+  string name = 2;
+}
+
+// Request to edit a floor
+message EditFloorRequest {
+  string floorId = 1;
+  string userId = 2;
+  string name = 3;
+}
+
+// Request to delete a floor
+message DeleteFloorRequest {
+  string floorId = 1;
+  string userId = 2;
+}
+
+// Response containing floor data
+message FloorsResponse {
+  StatusInfo status = 1;
+  repeated FloorData data = 2;
+}
+
+// Status information
+message StatusInfo {
+  int32 code = 1;
+  string message = 2;
+  optional string error = 3;
+}
+
+// Floor data
+message FloorData {
+  string id = 1;
+  string name = 2;
+  string userId = 3;
+  repeated RoomData rooms = 4;
+}
+
+// Room data
+message RoomData {
+  string id = 1;
+  string name = 2;
+  string floorId = 3;
+  repeated LineData lines = 4;
+}
+
+message FloorResponse {
+  StatusInfo status = 1;
+  optional FloorData data = 2;
+}
+
+message DeleteFloorResponse {
+  StatusInfo status = 1;
+}
+
+//LineData
+message LineData {
+  string id = 1;
+  string code = 2;
+  optional string name = 3;
+  optional string monitoringId = 4;
+  optional string monitoringCode = 5;
+  string roomId = 6;
+}

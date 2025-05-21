@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { join } from 'path';
 import { AuthDTO } from '@app/common';
+import { ValidationPipe } from '@nestjs/common';
 // import { RmqService } from '@app/common';
 
 async function bootstrap() {

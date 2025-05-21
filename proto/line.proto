@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package line;
+
+service LineService {
+  // Create a new line
+  rpc createLine (CreateLineRequest) returns (LineResponse);
+  
+  // Update line properties by user
+  rpc editLineByUser (EditLineRequest) returns (LineResponse);
+  
+  // Disconnect a line from a monitoring device
+  rpc disConnectLine (DisconnectLineRequest) returns (LineResponse);
+}
+
+// Request to create a new line
+message CreateLineRequest {
+  string code = 1;
+  string monitoringId = 2;
+}
+
+// Request to update a line
+message EditLineRequest {
+  string userId = 1;
+  string monitoringId = 2;
+  string lineId = 3;
+  string name = 4;
+  optional string roomId = 5;
+}
+
+// Request to disconnect a line
+message DisconnectLineRequest {
+  string lineId = 1;
+  string userId = 2;
+  string monitoringId = 3;
+}
+
+// Response containing a line
+message LineResponse {
+  StatusInfo status = 1;
+  optional LineData data = 2;
+}
+
+// Status information
+message StatusInfo {
+  int32 code = 1;
+  string message = 2;
+  string error = 3;
+}
+
+// Line data
+message LineData {
+  string id = 1;
+  string code = 2;
+  optional string name = 3;
+  bool active = 4;
+  optional string monitoringId = 5;
+  optional RoomData room = 6;
+}
+
+// Room data
+message RoomData {
+  string id = 1;
+  string name = 2;
+  optional FloorData floor = 3;
+}
+
+// Floor data
+message FloorData {
+  string id = 1;
+  string name = 2;
+}

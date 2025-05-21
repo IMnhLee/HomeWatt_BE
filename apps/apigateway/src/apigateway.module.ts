@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
+import { DeviceModule } from './device/device.module';
 import { ConfigModule } from '@nestjs/config';
 import * as Joi from 'joi';
 
@@ -21,6 +22,7 @@ import * as Joi from 'joi';
     }),
     UserModule,
     AuthModule,
+    DeviceModule
   ],
   controllers: [],
   providers: [],

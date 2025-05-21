@@ -49,10 +49,14 @@
     "device": {
       "type": "application",
       "root": "apps/device",
-      "entryFile": "main",
-      "sourceRoot": "apps/device/src",
+      "entryFile": "/src/main",
+      "sourceRoot": "./",
       "compilerOptions": {
-        "tsConfigPath": "apps/device/tsconfig.app.json"
+        "tsConfigPath": "apps/device/tsconfig.app.json",
+        "assets": [
+          "proto/*.proto"
+        ],
+        "watchAssets": true
       }
     },
     "identity": {

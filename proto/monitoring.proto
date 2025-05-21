@@ -1,0 +1,133 @@
+syntax = "proto3";
+
+package monitoring;
+
+service MonitoringService {
+  // Create a new monitoring device
+  rpc createMonitoring (CreateMonitoringRequest) returns (MonitoringResponse);
+  
+  // Add a monitoring device to a user
+  rpc addMonitoringByUser (AddMonitoringRequest) returns (MonitoringResponse);
+  
+  // Update monitoring device properties
+  rpc updateMonitoringByOwner (UpdateMonitoringRequest) returns (StatusResponse);
+  
+  // Remove a monitoring device from a user
+  rpc removeMonitoringByOwner (RemoveMonitoringRequest) returns (StatusResponse);
+  
+  // Get all monitoring devices for a user
+  rpc getMonitoringsByOwner (GetMonitoringsRequest) returns (GetMonitoringsResponse);
+}
+
+// Request to create a new monitoring device
+message CreateMonitoringRequest {
+  string code = 1;
+  bool active = 2;
+}
+
+// Request to add a monitoring device to a user
+message AddMonitoringRequest {
+  string userId = 1;
+  string code = 2;
+  string name = 3;
+  optional string location = 4;
+}
+
+// Request to update a monitoring device
+message UpdateMonitoringRequest {
+  string userId = 1;
+  string monitoringId = 2;
+  string name = 3;
+  optional string location = 4;
+}
+
+// Request to remove a monitoring device from a user
+message RemoveMonitoringRequest {
+  string monitoringId = 1;
+}
+
+// Request to get user's monitoring devices with pagination
+message GetMonitoringsRequest {
+  string userId = 1;
+  int32 page = 2;
+  int32 limit = 3;
+}
+
+// Response containing a monitoring device
+message MonitoringResponse {
+  StatusInfo status = 1;
+  optional MonitoringData data = 2;
+}
+
+// Response with just status info
+message StatusResponse {
+  StatusInfo status = 1;
+}
+
+// Status information
+message StatusInfo {
+  int32 code = 1;
+  string message = 2;
+  string error = 3;
+}
+
+// Monitoring device data
+message MonitoringData {
+  string id = 1;
+  string code = 2;
+  string name = 3;
+  string location = 4;
+  bool active = 5;
+}
+
+// Room data
+message RoomData {
+  string id = 1;
+  string name = 2;
+  FloorData floor = 3;
+}
+
+// Floor data
+message FloorData {
+  string id = 1;
+  string name = 2;
+}
+
+// Line data
+message LineData {
+  string id = 1;
+  string code = 2;
+  string name = 3;
+  bool active = 4;
+  RoomData room = 5;
+}
+
+// Complete monitoring data with lines
+message MonitoringWithLinesData {
+  string id = 1;
+  string code = 2;
+  string name = 3;
+  string location = 4;
+  bool active = 5;
+  repeated LineData lines = 6;
+}
+
+// Pagination metadata
+message PaginationMeta {
+  int32 page = 1;
+  int32 limit = 2;
+  int32 totalCount = 3;
+  int32 totalPages = 4;
+}
+
+// Response containing list of monitoring devices with pagination
+message GetMonitoringsResponse {
+  StatusInfo status = 1;
+  optional MonitoringsData data = 2;
+}
+
+// Container for monitoring list and pagination info
+message MonitoringsData {
+  repeated MonitoringWithLinesData data = 1;
+  PaginationMeta meta = 2;
+}

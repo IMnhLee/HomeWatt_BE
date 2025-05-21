@@ -113,18 +113,18 @@ export class UserService {
   }
 
   async forgotPassword(email: UserDTO.UserEmailRequest) {
-    try {
-      const user = await this.userRepository.findOneBy({ where: email });
-      if (!user) {
-        throw new NotFoundException('User not found.');
-      }
-      if (user.active === false) {
-        throw new UnprocessableEntityException('User is inactive.');
-      }
-      if (user.googleId) {
-        throw new UnprocessableEntityException('User registered with Google. Cannot reset password.');
-      }
+    const user = await this.userRepository.findOneBy({ where: email });
+    if (!user) {
+      throw new NotFoundException('User not found.');
+    }
+    if (user.active === false) {
+      throw new UnprocessableEntityException('User is inactive.');
+    }
+    if (user.googleId) {
+      throw new UnprocessableEntityException('User registered with Google. Cannot reset password.');
+    }
 
+    try {
       const resetToken = crypto.randomBytes(32).toString('hex');
       const hashedToken = await bcrypt.hash(resetToken, 10);
 
