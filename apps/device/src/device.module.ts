@@ -19,6 +19,13 @@ import { FloorRepository } from './floor/floor.repository';
 import { RoomRepository } from './room/room.repository';
 import { FloorController } from './floor/floor.controller';
 import { RoomController } from './room/room.controller';
+import { EPriceService } from './e_price/e_price.service';
+import { OnePriceRepository } from './e_price/e_price.repository/one_price.repository';
+import { StairPriceRepository } from './e_price/e_price.repository/stair_price.repository';
+import { PercentPriceRepository } from './e_price/e_price.repository/percent_price.repository';
+import { EPriceController } from './e_price/e_price.controller';
+import { OnePriceConfig } from './entities/one-price-config.entity';
+import { PercentPriceConfig } from './entities/percent-price-config.entity';
 
 @Module({
   imports: [
@@ -35,19 +42,23 @@ import { RoomController } from './room/room.controller';
       envFilePath: './apps/device/.env',
     }),
     DatabaseModule,
-    TypeOrmModule.forFeature([Line, Floor, Room, Monitoring]),
+    TypeOrmModule.forFeature([Line, Floor, Room, Monitoring, OnePriceConfig, PercentPriceConfig,]),
     // RmqModule,
   ],
-  controllers: [MonitoringController, LineController, FloorController, RoomController],
+  controllers: [MonitoringController, LineController, FloorController, RoomController, EPriceController],
   providers: [
     MonitoringService,
     LineService,
     FloorService,
     RoomService,
+    EPriceService,
     MonitoringRepository,
     LineRepository,
     FloorRepository,
-    RoomRepository
+    RoomRepository,
+    OnePriceRepository,
+    StairPriceRepository,
+    PercentPriceRepository
   ],
 })
 export class DeviceModule {}

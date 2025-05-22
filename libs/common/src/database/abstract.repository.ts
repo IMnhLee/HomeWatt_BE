@@ -117,11 +117,15 @@ export abstract class AbstractRepository<T extends AbstractEntity> implements IR
     return count > 0;
   }
 
-  async updateBy(criteria: FindOptionsWhere<T>, data: QueryDeepPartialEntity<T>): Promise<boolean> {
+  async updateBy(criteria: FindOptionsWhere<T>, data: QueryDeepPartialEntity<T>): Promise<T> {
     try {
-      const result = await this.repository.update(criteria, data);
-      this.logger.log(`Updated ${result.affected} entities`);
-      return (result.affected ?? 0) > 0;
+      await this.repository.update(criteria, data);
+      const entity = await this.repository.findOneBy(criteria);
+      if (!entity) {
+        this.logger.warn(`Entity not found after update with specified criteria`);
+        throw new NotFoundException('Entity not found after update');
+      }
+      return entity;
     } catch (error) {
       this.logger.error(`Failed to update entities: ${error.message}`);
       throw error;
