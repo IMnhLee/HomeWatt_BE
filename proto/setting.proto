@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package setting;
+
+service SettingService {
+  rpc CreateSetting(CreateSettingRequest) returns (SettingResponse) {}
+  rpc GetSetting(GetSettingRequest) returns (SettingResponse) {}
+  rpc UpdateSetting(UpdateSettingRequest) returns (SettingResponse) {}
+}
+
+// Request messages
+message CreateSettingRequest {
+  string user_id = 1;
+}
+
+message GetSettingRequest {
+  string user_id = 1;
+}
+
+message UpdateSettingRequest {
+  string user_id = 1;
+  int32 billing_cycle_start_day = 2;
+  double energy_consumption_threshold = 3;
+}
+
+// Response messages
+message SettingResponse {
+  Status status = 1;
+  Setting data = 2;
+}
+
+message Status {
+  int32 code = 1;
+  string message = 2;
+  optional string error = 3;
+}
+
+message Setting {
+  string price_type = 1;
+  int32 billing_cycle_start_day = 2;
+  double energy_consumption_threshold = 3;
+}

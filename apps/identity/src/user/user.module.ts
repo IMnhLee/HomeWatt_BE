@@ -5,6 +5,7 @@ import { UserRepository } from './user.repository';
 import { User } from './entities/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RmqModule } from '@app/common';
+import { MonitoringModule } from '../monitoring/monitoring.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { RmqModule } from '@app/common';
     RmqModule.register({
       name: 'MAIL',
     }),
+    MonitoringModule,
   ],
   controllers: [UserController],
   providers: [

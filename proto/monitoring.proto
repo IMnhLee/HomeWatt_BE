@@ -17,6 +17,18 @@ service MonitoringService {
   
   // Get all monitoring devices for a user
   rpc getMonitoringsByOwner (GetMonitoringsRequest) returns (GetMonitoringsResponse);
+
+  // Get user Monitorings
+  rpc getUserMonitoring (UserIdRequest) returns (MonitoringResponses);
+}
+
+message UserIdRequest {
+  string userId = 1;
+}
+
+message MonitoringResponses {
+  StatusInfo status = 1;
+  repeated MonitoringData data = 2;
 }
 
 // Request to create a new monitoring device
@@ -75,8 +87,8 @@ message StatusInfo {
 message MonitoringData {
   string id = 1;
   string code = 2;
-  string name = 3;
-  string location = 4;
+  optional string name = 3;
+  optional string location = 4;
   bool active = 5;
 }
 

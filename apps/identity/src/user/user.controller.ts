@@ -18,11 +18,7 @@ export class UserController implements UserDTO.UserServiceController {
           code: 200,
           message: 'Get all users success',
         },
-        data: users.map(({ password, ...user }) => ({
-          ...user,
-          createdAt: user.createdAt ? user.createdAt.toISOString() : '',
-          updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
-        }))
+        data: users
       };
     }
     catch (error) {

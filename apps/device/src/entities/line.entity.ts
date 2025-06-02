@@ -25,6 +25,6 @@ export class Line extends AbstractEntity {
     @Column({ name: "room_id", nullable: true })
     roomId: string;
 
-    @Column({ type: "boolean", default: true })
+    @Column({ type: "boolean", default: false })
     active: boolean;
 }

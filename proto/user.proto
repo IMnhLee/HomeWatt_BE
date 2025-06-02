@@ -89,6 +89,17 @@ message UserInfo {
     string updatedAt = 10;
 }
 
+message MonitoringData {
+    string id = 1;
+    string code = 2;
+    bool active = 3;
+}
+
+message UserInfoAndMonitoring {
+    UserInfo user = 1;
+    repeated MonitoringData monitoring = 2;
+}
+
 // Response containing a single user
 message UserResponse {
     ResponseStatus status =1;
@@ -98,7 +109,7 @@ message UserResponse {
 // Response containing multiple users
 message UsersResponse {
     ResponseStatus status = 1;
-    repeated UserInfo data = 2;
+    repeated UserInfoAndMonitoring data = 2;
 }
 
 // Response for delete operation

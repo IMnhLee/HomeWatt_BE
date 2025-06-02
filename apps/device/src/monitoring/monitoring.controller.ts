@@ -116,4 +116,28 @@ export class MonitoringController implements MonitoringITF.MonitoringServiceCont
             };
         }
     }
+
+    async getUserMonitoring(request: MonitoringITF.UserIdRequest): Promise<MonitoringITF.MonitoringResponses> {
+        try {
+            const response = await this.monitoringService.getUserMonitoring(request.userId);
+            return {
+                status: {
+                    code: 200,
+                    message: 'Get user monitoring success',
+                    error: '',
+                },
+                data: response,
+            };
+        }
+        catch (error) {
+            return {
+                status: {
+                    code: error.status || 500,
+                    message: error.message,
+                    error: error.error || 'Internal Server Error',
+                },
+                data: [],
+            };
+        }
+    }
 }

@@ -45,7 +45,7 @@ export class RoomService {
             throw new NotFoundException('Room not found');
         }
         try {
-            const response = await this.roomRepository.delete(room.id)
+            const response = await this.roomRepository.deleteAndKeepLines(room.id)
             return response
         }
         catch (error) {

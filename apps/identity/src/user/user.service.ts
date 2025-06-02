@@ -6,6 +6,7 @@ import * as crypto from 'crypto';
 import {UserDTO} from '@app/common';
 import { UpdatePasswordRequest } from './dto/updatePasssword.request';
 import { ClientProxy } from '@nestjs/microservices';
+import { MonitoringService } from '../monitoring/monitoring.service';
 
 @Injectable()
 export class UserService {
@@ -13,16 +14,32 @@ export class UserService {
 
   constructor(
     private readonly userRepository: UserRepository,
+    private readonly monitoringService: MonitoringService,
     @Inject("MAIL") private mailClient: ClientProxy,
   ) {}
 
-  async findAll() {
-    return this.userRepository.findAll();
-    // return result.map((user) => {
-    //   const { password, ...userWithoutPassword } = user;
-    //   return userWithoutPassword;
-    // });
-  }
+async findAll() {
+  const users = await this.userRepository.findAll();
+  
+  const usersWithMonitoring = await Promise.all(
+    users.map(async (user) => {
+      // Get monitoring data for this user
+      const monitoringData = await this.monitoringService.getUserMonitoring(user.id);
+      
+      // Return user with their monitoring data in the format matching the proto definition
+      return {
+        user: {
+          ...user,
+          createdAt: user.createdAt ? user.createdAt.toISOString() : '',
+          updatedAt: user.updatedAt ? user.updatedAt.toISOString() : ''
+        },
+        monitoring: monitoringData.data
+      };
+    })
+  );
+  
+  return usersWithMonitoring;
+}
 
   async findOneByEmail(email: UserDTO.UserEmailRequest) {
     try {

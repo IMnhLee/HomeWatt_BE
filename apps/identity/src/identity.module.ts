@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import * as Joi from 'joi';
 import { DatabaseModule, RmqModule } from '@app/common';
 import { UserModule } from './user/user.module';
+import { MonitoringModule } from './monitoring/monitoring.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { UserModule } from './user/user.module';
     DatabaseModule,
     // RmqModule,
     UserModule,
+    // MonitoringModule
   ],
   controllers: [],
   providers: [],

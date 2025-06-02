@@ -1,4 +1,4 @@
-import { FloorITF, LineITF, MonitoringITF, RoomITF } from '@app/common';
+import { EnergyITF, EPriceITF, FloorITF, LineITF, MonitoringITF, RoomITF } from '@app/common';
 import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { join } from 'path';
@@ -10,6 +10,10 @@ import { MonitoringService } from './service/monitoring.service';
 import { LineService } from './service/line.service';
 import { FloorService } from './service/floor.service';
 import { RoomService } from './service/room.service';
+import { EpriceConfigController } from './controller/epriceConfig.controller';
+import { EpriceConfigService } from './service/epriceConfig.service';
+import { EnergyController } from './controller/energy.controller';
+import { EnergyService } from './service/energy.service';
 
 @Module({
   imports: [
@@ -50,9 +54,27 @@ import { RoomService } from './service/room.service';
           url: 'device:50054'
         },
       },
+      {
+        name: EPriceITF.E_PRICE_PACKAGE_NAME,
+        transport: Transport.GRPC,
+        options: {
+          package: EPriceITF.E_PRICE_PACKAGE_NAME,
+          protoPath: join(__dirname, '../eprice.proto'),
+          url: 'device:50054'
+        },
+      },
+      {
+        name: EnergyITF.ENERGY_RECORD_PACKAGE_NAME,
+        transport: Transport.GRPC,
+        options: {
+          package: EnergyITF.ENERGY_RECORD_PACKAGE_NAME,
+          protoPath: join(__dirname, '../energy.proto'),
+          url: 'device:50054'
+        },
+      }
     ]),
   ],
-  controllers: [MonitoringController, LineController, FloorController, RoomController],
-  providers: [MonitoringService, LineService, FloorService, RoomService],
+  controllers: [MonitoringController, LineController, FloorController, RoomController, EpriceConfigController, EnergyController],
+  providers: [MonitoringService, LineService, FloorService, RoomService, EpriceConfigService, EnergyService],
 })
 export class DeviceModule {}

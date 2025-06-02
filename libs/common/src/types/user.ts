@@ -71,6 +71,17 @@ export interface UserInfo {
   updatedAt: string;
 }
 
+export interface MonitoringData {
+  id: string;
+  code: string;
+  active: boolean;
+}
+
+export interface UserInfoAndMonitoring {
+  user: UserInfo | undefined;
+  monitoring: MonitoringData[];
+}
+
 /** Response containing a single user */
 export interface UserResponse {
   status: ResponseStatus | undefined;
@@ -80,7 +91,7 @@ export interface UserResponse {
 /** Response containing multiple users */
 export interface UsersResponse {
   status: ResponseStatus | undefined;
-  data: UserInfo[];
+  data: UserInfoAndMonitoring[];
 }
 
 /** Response for delete operation */

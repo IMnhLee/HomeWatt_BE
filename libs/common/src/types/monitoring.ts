@@ -10,6 +10,15 @@ import { Observable } from "rxjs";
 
 export const protobufPackage = "monitoring";
 
+export interface UserIdRequest {
+  userId: string;
+}
+
+export interface MonitoringResponses {
+  status: StatusInfo | undefined;
+  data: MonitoringData[];
+}
+
 /** Request to create a new monitoring device */
 export interface CreateMonitoringRequest {
   code: string;
@@ -66,8 +75,8 @@ export interface StatusInfo {
 export interface MonitoringData {
   id: string;
   code: string;
-  name: string;
-  location: string;
+  name?: string | undefined;
+  location?: string | undefined;
   active: boolean;
 }
 
@@ -145,6 +154,10 @@ export interface MonitoringServiceClient {
   /** Get all monitoring devices for a user */
 
   getMonitoringsByOwner(request: GetMonitoringsRequest): Observable<GetMonitoringsResponse>;
+
+  /** Get user Monitorings */
+
+  getUserMonitoring(request: UserIdRequest): Observable<MonitoringResponses>;
 }
 
 export interface MonitoringServiceController {
@@ -177,6 +190,12 @@ export interface MonitoringServiceController {
   getMonitoringsByOwner(
     request: GetMonitoringsRequest,
   ): Promise<GetMonitoringsResponse> | Observable<GetMonitoringsResponse> | GetMonitoringsResponse;
+
+  /** Get user Monitorings */
+
+  getUserMonitoring(
+    request: UserIdRequest,
+  ): Promise<MonitoringResponses> | Observable<MonitoringResponses> | MonitoringResponses;
 }
 
 export function MonitoringServiceControllerMethods() {
@@ -187,6 +206,7 @@ export function MonitoringServiceControllerMethods() {
       "updateMonitoringByOwner",
       "removeMonitoringByOwner",
       "getMonitoringsByOwner",
+      "getUserMonitoring",
     ];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);

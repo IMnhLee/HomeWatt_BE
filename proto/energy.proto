@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+package energy_record;
+
+// Service definition
+service EnergyRecordService {
+    // Get energy consumption and cost data
+    rpc GetEnergyConsumptionAndCost (GetEnergyConsumptionRequest) returns (GetEnergyConsumptionResponse);
+    
+    // Get energy consumption by time period (daily/monthly)
+    rpc GetEnergyConsumption (GetTimeEnergyConsumptionRequest) returns (GetTimeEnergyConsumptionResponse);
+}
+
+// Request to get energy consumption and cost
+message GetEnergyConsumptionRequest {
+    string user_id = 1;
+}
+
+// Request to get time-based energy consumption 
+message GetTimeEnergyConsumptionRequest {
+    string user_id = 1;
+    string date = 2;
+    string view_type = 3; // 'daily' or 'monthly'
+}
+
+// Response containing energy consumption and cost data
+message GetEnergyConsumptionResponse {
+    StatusMessage status = 1;
+    optional ConsumptionResult data = 2;
+}
+
+// Response for time-based energy consumption
+message GetTimeEnergyConsumptionResponse {
+    StatusMessage status = 1;
+    optional TimeConsumptionResult data = 2;
+}
+
+// Time-based consumption result
+message TimeConsumptionResult {
+    repeated string time_labels = 1;
+    repeated LineData lines = 2;
+    repeated double totals_by_time = 3;
+}
+
+// Line data for time-based consumption
+message LineData {
+    string line_code = 1;
+    string line_name = 2;
+    optional string room_id = 3;
+    optional string room_name = 4;
+    optional string floor_id = 5;
+    optional string floor_name = 6;
+    repeated double data = 7;
+}
+
+// Status message for responses
+message StatusMessage {
+    int32 code = 1;
+    string message = 2;
+    optional string error = 3;
+}
+
+// Result of energy consumption calculation
+message ConsumptionResult {
+    double total_energy = 1;
+    double total_cost = 2;
+    double current_price = 3;
+    repeated ChartDataPoint chart_data = 4;
+    map<string, string> line_names = 5;
+    map<string, double> line_costs = 6;
+    map<string, double> line_energy = 7;
+}
+
+// Data point for chart visualization
+message ChartDataPoint {
+    string label = 1;
+    map<string, double> data = 2;
+    map<string, double> costs = 3;
+    double total_energy = 4;
+    double total_cost = 5;
+    int32 timestamp = 6;
+}
+
+// Map entry for line data mapping
+message LineDataEntry {
+    string line_code = 1;
+    double value = 2;
+}
+
+// Map entry for line name mapping
+message LineNameEntry {
+    string line_code = 1;
+    string name = 2;
+}

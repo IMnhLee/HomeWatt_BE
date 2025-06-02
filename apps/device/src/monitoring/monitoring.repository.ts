@@ -61,6 +61,28 @@ export class MonitoringRepository extends AbstractRepository<Monitoring> {
         }
 
         return [monitorings, total];
+    };
+
+    async findByUserIdWithRelations(userId: string): Promise<Monitoring[]> {
+        return this.repository.find({
+            where: { userId },
+            relations: {
+                lines: {
+                    room: {
+                        floor: true,
+                    },
+                },
+            },
+        });
+    };
+
+    async findLinesByUserId(userId: string) {
+        return this.repository.find({
+            where: { userId },
+            relations: {
+                lines: true
+            },
+        });
     }
 
 }

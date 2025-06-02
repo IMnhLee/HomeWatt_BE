@@ -167,4 +167,21 @@ export class MonitoringService {
     }
   }
 
+  async getUserMonitoring(userId: string) {
+    try {
+      const monitorings = await this.monitoringRepository.findWithOptions({
+        where: { userId: userId },
+      })
+      return monitorings.map(monitoring => ({
+        id: monitoring.id,
+        code: monitoring.code,
+        active: monitoring.active,
+      }));
+    }
+    catch (error) {
+      this.logger.error(`Error fetching user monitoring for userId: ${userId}`, error);
+      throw new BadRequestException('Failed to retrieve user monitoring');
+    }
+  }
+
 }
