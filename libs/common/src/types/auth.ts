@@ -99,6 +99,7 @@ export interface JwtPayload {
   sub: string;
   email: string;
   role: string;
+  active: boolean;
 }
 
 export interface RegisterRequest {

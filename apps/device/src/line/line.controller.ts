@@ -36,6 +36,7 @@ export class LineController implements LineITF.LineServiceController {
 
     async editLineByUser(request: LineITF.EditLineRequest): Promise<LineITF.LineResponse> {
         try {
+            console.log('EditLineByUser request:', request);
             const response = await this.lineService.updateLineByUser(request);
             return {
                 status: {

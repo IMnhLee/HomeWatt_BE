@@ -116,6 +116,7 @@ export class UserController implements UserDTO.UserServiceController {
   
   async updateUser(request: UserDTO.UpdateUserRequest): Promise<UserDTO.UserResponse> {
     try {
+      console.log('Update user request:', request);
       const user = await this.userService.update(request);
       const { password, ...userWithoutPassword } = user;
       return {
@@ -248,6 +249,29 @@ export class UserController implements UserDTO.UserServiceController {
           code: 200,
           message: response.message,
         },
+      };
+    }
+    catch (error) {
+      return {
+        status: {
+          code: error.status || 500,
+          message: error.message,
+          error: error.error || 'Internal Server Error',
+        },
+      };
+    }
+  }
+
+  async manageUser(request: UserDTO.ManageUserRequest): Promise<UserDTO.ManageUserResponse> {
+    try {
+      const { userId, active } = request;
+      const response = await this.userService.manageUser(userId, active);
+      return {
+        status: {
+          code: 200,
+          message: response.message,
+        },
+        data: response.user,
       };
     }
     catch (error) {

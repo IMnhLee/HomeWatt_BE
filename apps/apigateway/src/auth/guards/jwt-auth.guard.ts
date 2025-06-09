@@ -36,6 +36,12 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     if (err || !user) {
       throw err || new UnauthorizedException('Invalid token');
     }
+
+    // Kiểm tra user có active không
+    if (user.active === false) {
+      throw new UnauthorizedException('User not found or inactive');
+    }
+
     return user;
   }
 }

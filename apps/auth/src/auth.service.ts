@@ -269,6 +269,8 @@ export class AuthService {
       const payload = this.jwtService.verify(request.token, {
         secret: this.configService.get('JWT_ACCESS_SECRET'),
       });
+
+      const response = await this.userService.GetUserById({ id: payload.sub });
       
       return {
         status: {
@@ -279,6 +281,7 @@ export class AuthService {
           sub: payload.sub,
           email: payload.email,
           role: payload.role || 'user',
+          active: response.data.active,
         },
       };
     } catch (error) {

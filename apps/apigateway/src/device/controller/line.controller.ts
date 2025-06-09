@@ -19,6 +19,7 @@ export class LineController {
     @Post('edit')
     @UseGuards(JwtAuthGuard)
     async editLine(@Body() body: UpdateLineByUser, @CurrentUser() user) {
+        console.log('EditLineByUser body:', body);
         const request: LineITF.EditLineRequest = {
             userId: user.id,
             monitoringId: body.monitoringId,

@@ -85,4 +85,34 @@ export class MonitoringRepository extends AbstractRepository<Monitoring> {
         });
     }
 
+    async removeMonitoring(monitoringId: string) {
+        return this.repository.manager.transaction(async (manager) => {
+            // Reset monitoring fields
+            await manager
+                .createQueryBuilder()
+                .update('monitoring')
+                .set({
+                    userId: null,
+                    name: null,
+                    location: null
+                })
+                .where("id = :monitoringId", { monitoringId })
+                .execute();
+
+            // Reset all lines associated with this monitoring
+            await manager
+                .createQueryBuilder()
+                .update('line')
+                .set({
+                    name: null,
+                    roomId: null,
+                    active: true
+                })
+                .where("monitoring_id = :monitoringId", { monitoringId })
+                .execute();
+
+            return { affected: 1 };
+        });
+    }
+
 }

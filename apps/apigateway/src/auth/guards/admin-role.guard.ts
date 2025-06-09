@@ -20,7 +20,7 @@ export class AdminRoleGuard extends JwtAuthGuard {
     const user = request.user;
 
     // Check if user has admin role
-    if (user?.role !== 'ADMIN') {
+    if (user?.role !== 'admin') {
       throw new ForbiddenException('Access denied: Admin role required');
     }
 

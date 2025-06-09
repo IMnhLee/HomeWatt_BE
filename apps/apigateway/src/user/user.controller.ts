@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Req, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, ForbiddenException, Get, Param, Post, Put, Req, UseGuards, UseInterceptors } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserDTO } from '@app/common';
 import { firstValueFrom } from 'rxjs';
@@ -6,6 +6,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminRoleGuard } from '../auth/guards/admin-role.guard';
 import { Public } from '../auth/decorators/public.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { ManageUserDto } from './dto/manageUser.dto';
+import { UserIdDto } from './dto/userId.dto';
 
 @Controller('user')
 // @UseInterceptors(ResponseTransformInterceptor)
@@ -13,7 +15,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
     @Get()
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(AdminRoleGuard)
     async getAllUsers() {
       return this.userService.GetAllUsers();
     }
@@ -40,13 +42,16 @@ export class UserController {
     
     @Put(':id')
     @UseGuards(JwtAuthGuard)
-    async updateUser(@Param() id: UserDTO.UserIdRequest, @Body() request: UserDTO.UpdateUserData) {
-      return this.userService.UpdateUser({ ...id, data: request });
+    async updateUser(@CurrentUser() user, @Body() request: UserDTO.UpdateUserData) {
+      return this.userService.UpdateUser({ id: user.id, data: request });
     }
   
     @Delete(':id')
     @UseGuards(AdminRoleGuard)
-    async deleteUser(@Param() id: UserDTO.UserIdRequest) {
+    async deleteUser(@Param() id: UserIdDto, @CurrentUser() admin) {
+      if (id.id === admin.id) {
+        throw new ForbiddenException('You cannot delete your own account.');
+      }
       return this.userService.DeleteUser(id);
     }
 
@@ -66,4 +71,13 @@ export class UserController {
     async resetPassword(@Body() request: UserDTO.ResetPasswordRequest) {
       return this.userService.ResetPassword(request);
     }
+
+    @Put('manage-active/:id')
+    @UseGuards(AdminRoleGuard)
+    async manageActiveUser(@Param() id: UserIdDto, @Body() request: ManageUserDto, @CurrentUser() admin) {
+    if (id.id === admin.id) {
+      throw new ForbiddenException('You cannot change your own status.');
+    }
+    return this.userService.ManageUser({ userId: id.id, ...request });
+  }
 }

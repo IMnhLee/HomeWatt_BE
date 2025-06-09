@@ -69,6 +69,7 @@ export interface UserInfo {
   emailCode: string;
   createdAt: string;
   updatedAt: string;
+  active: boolean;
 }
 
 export interface MonitoringData {
@@ -135,6 +136,16 @@ export interface ResetPasswordResponse {
   status: ResponseStatus | undefined;
 }
 
+export interface ManageUserRequest {
+  userId: string;
+  active: boolean;
+}
+
+export interface ManageUserResponse {
+  status: ResponseStatus | undefined;
+  data?: UserInfo | undefined;
+}
+
 export const USER_PACKAGE_NAME = "user";
 
 export interface UserServiceClient {
@@ -175,6 +186,8 @@ export interface UserServiceClient {
   forgotPassword(request: ForgotPasswordRequest): Observable<ForgotPasswordResponse>;
 
   resetPassword(request: ResetPasswordRequest): Observable<ResetPasswordResponse>;
+
+  manageUser(request: ManageUserRequest): Observable<ManageUserResponse>;
 }
 
 export interface UserServiceController {
@@ -223,6 +236,10 @@ export interface UserServiceController {
   resetPassword(
     request: ResetPasswordRequest,
   ): Promise<ResetPasswordResponse> | Observable<ResetPasswordResponse> | ResetPasswordResponse;
+
+  manageUser(
+    request: ManageUserRequest,
+  ): Promise<ManageUserResponse> | Observable<ManageUserResponse> | ManageUserResponse;
 }
 
 export function UserServiceControllerMethods() {
@@ -238,6 +255,7 @@ export function UserServiceControllerMethods() {
       "updateUserPassword",
       "forgotPassword",
       "resetPassword",
+      "manageUser",
     ];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);

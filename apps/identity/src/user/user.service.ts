@@ -204,5 +204,32 @@ async findAll() {
       message: 'Password reset successfully.',
     }
   }
+
+  async manageUser(userId, active: boolean) {
+    const user = await this.userRepository.findOneById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found.');
+    }
+    
+    // if (user.googleId) {
+    //   throw new UnprocessableEntityException('Cannot change status of Google registered user.');
+    // }
+
+    const updatedUser = await this.userRepository.update(userId, { active });
+    
+    if (!updatedUser) {
+      throw new NotFoundException('User not found.');
+    }
+
+    return {
+      message: `User ${active ? 'activated' : 'deactivated'} successfully.`,
+      user: {
+          ...updatedUser,
+          createdAt: updatedUser.createdAt ? updatedUser.createdAt.toISOString() : '',
+          updatedAt: updatedUser.updatedAt ? updatedUser.updatedAt.toISOString() : ''
+        },
+    };
+
+  }
     
 }

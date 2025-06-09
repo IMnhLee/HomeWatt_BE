@@ -18,7 +18,6 @@ export class EnergyService implements OnModuleInit {
     }
 
     async getEnergyConsumption (request: EnergyITF.GetTimeEnergyConsumptionRequest) {
-        console.log('Requesting energy consumption with:', request);
         const response = await firstValueFrom(this.energyService.getEnergyConsumption(request));
         return handleMicroserviceResponse(response);
     }

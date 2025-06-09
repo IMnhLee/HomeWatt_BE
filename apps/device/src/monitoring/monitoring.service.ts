@@ -154,9 +154,7 @@ export class MonitoringService {
       if (!monitoring) {
         throw new NotFoundException('Monitoring not found');
       }
-      await this.monitoringRepository.update(monitoringId, {
-        userId: null as unknown as string,
-      })
+      await this.monitoringRepository.removeMonitoring(monitoringId)
       return {
         message: 'Monitoring removed successfully',
       }

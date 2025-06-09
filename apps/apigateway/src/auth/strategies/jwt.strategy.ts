@@ -30,12 +30,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       // if (!response || !response.data || !response.data.isValid) {
       //   throw new UnauthorizedException('Invalid or revoked token');
       // }
+
       
       // Trả về đối tượng user từ payload JWT
       return {
         id: response.data.sub,
         email: response.data.email,
         role: response.data.role || 'user',
+        active: response.data.active,
         // Thêm các thông tin khác từ payload nếu cần
       };
     } catch (error) {

@@ -64,7 +64,7 @@ export class LineService {
             }
             const response = await this.lineRepository.update(line.id, {
                 name: name,
-                roomId: roomId,
+                roomId: roomId || null as unknown as string,
                 active: true,
             })
             return response

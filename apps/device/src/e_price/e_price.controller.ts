@@ -45,7 +45,7 @@ export class EPriceController implements EPriceITF.EPriceServiceController {
                     code: 200,
                     message: 'Get Price success',
                 },
-                data: response,
+                data: response || [],
             };
         }
         catch (error) {
@@ -117,7 +117,7 @@ export class EPriceController implements EPriceITF.EPriceServiceController {
                     code: 200,
                     message: 'Get Price success',
                 },
-                data: response,
+                data: response || [],
             };
         }
         catch (error) {
@@ -211,7 +211,7 @@ export class EPriceController implements EPriceITF.EPriceServiceController {
                     code: 200,
                     message: 'Get Price success',
                 },
-                data: response,
+                data: response || [],
             };
         }
         catch (error) {

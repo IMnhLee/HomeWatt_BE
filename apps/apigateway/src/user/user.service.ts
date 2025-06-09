@@ -62,4 +62,9 @@ export class UserService implements OnModuleInit {
         const response = await firstValueFrom(this.userService.resetPassword(request));
         return handleMicroserviceResponse(response);
     }
+
+    async ManageUser(request: UserDTO.ManageUserRequest) {
+        const response = await firstValueFrom(this.userService.manageUser(request));
+        return handleMicroserviceResponse(response);
+    }
 }

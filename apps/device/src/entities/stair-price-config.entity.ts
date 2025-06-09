@@ -7,7 +7,7 @@ export class StairPriceConfig extends AbstractEntity{
     @Column({ type: 'uuid', nullable: false })
     userId: string;
 
-    @Column({ unique: true })
+    @Column({ unique: false })
     step: number;
 
     @Column('decimal', { precision: 10, scale: 2 })

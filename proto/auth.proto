@@ -112,13 +112,14 @@ message VerifyTokenRequest {
 
 message VerifyTokenResponse {
     ResponseStatus status = 1;
-    optional JwtPayload data = 3;
+    optional JwtPayload data = 2;
 }
 
 message JwtPayload {
     string sub = 1;
     string email = 2;
     string role = 3;
+    bool active = 4;
 }
 
 message RegisterRequest {

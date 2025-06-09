@@ -33,7 +33,7 @@ export class MonitoringController {
     async updateMonitoring(@Body() body, @CurrentUser() user) {
         const request: MonitoringITF.UpdateMonitoringRequest = {
             userId: user.id,
-            monitoringId: body.monitoringId,
+            monitoringId: body.id,
             name: body.name,
             location: body.location,
         };

@@ -31,6 +31,8 @@ service UserService {
     rpc ForgotPassword (ForgotPasswordRequest) returns (ForgotPasswordResponse);
 
     rpc ResetPassword (ResetPasswordRequest) returns (ResetPasswordResponse);
+
+    rpc ManageUser (ManageUserRequest) returns (ManageUserResponse);
 }
 
 // Empty message for requests that don't need parameters
@@ -87,6 +89,7 @@ message UserInfo {
     string emailCode = 8;
     string createdAt = 9;
     string updatedAt = 10;
+    bool active = 11;
 }
 
 message MonitoringData {
@@ -151,4 +154,14 @@ message ResetPasswordRequest {
 
 message ResetPasswordResponse {
     ResponseStatus status = 1;
+}
+
+message ManageUserRequest {
+    string userId = 1;
+    bool active = 2;
+}
+
+message ManageUserResponse {
+    ResponseStatus status = 1;
+    optional UserInfo data = 2;
 }
