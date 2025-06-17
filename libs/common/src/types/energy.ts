@@ -23,6 +23,11 @@ export interface GetTimeEnergyConsumptionRequest {
   viewType: string;
 }
 
+/** Request to get current line energy data */
+export interface GetLineEnergyDataRequest {
+  userId: string;
+}
+
 /** Response containing energy consumption and cost data */
 export interface GetEnergyConsumptionResponse {
   status: StatusMessage | undefined;
@@ -33,6 +38,44 @@ export interface GetEnergyConsumptionResponse {
 export interface GetTimeEnergyConsumptionResponse {
   status: StatusMessage | undefined;
   data?: TimeConsumptionResult | undefined;
+}
+
+/** Response for current line energy data */
+export interface GetLineEnergyDataResponse {
+  status: StatusMessage | undefined;
+  data: LineCurrentEnergyData[];
+}
+
+/** Current energy data for a single line */
+export interface LineCurrentEnergyData {
+  lineCode: string;
+  lineName: string;
+  roomId?: string | undefined;
+  roomName?: string | undefined;
+  floorId?: string | undefined;
+  floorName?:
+    | string
+    | undefined;
+  /** U (V) */
+  voltage?:
+    | number
+    | undefined;
+  /** I (A) */
+  current?:
+    | number
+    | undefined;
+  /** P (W) */
+  power?:
+    | number
+    | undefined;
+  /** E (kWh) */
+  energy?:
+    | number
+    | undefined;
+  /** ISO string format */
+  recordTime: string;
+  /** true if data is from current hour */
+  isCurrentHour: boolean;
 }
 
 /** Time-based consumption result */
@@ -130,6 +173,10 @@ export interface EnergyRecordServiceClient {
   /** Get energy consumption by time period (daily/monthly) */
 
   getEnergyConsumption(request: GetTimeEnergyConsumptionRequest): Observable<GetTimeEnergyConsumptionResponse>;
+
+  /** Get current energy data for all lines */
+
+  getLineEnergyData(request: GetLineEnergyDataRequest): Observable<GetLineEnergyDataResponse>;
 }
 
 /** Service definition */
@@ -149,11 +196,17 @@ export interface EnergyRecordServiceController {
     | Promise<GetTimeEnergyConsumptionResponse>
     | Observable<GetTimeEnergyConsumptionResponse>
     | GetTimeEnergyConsumptionResponse;
+
+  /** Get current energy data for all lines */
+
+  getLineEnergyData(
+    request: GetLineEnergyDataRequest,
+  ): Promise<GetLineEnergyDataResponse> | Observable<GetLineEnergyDataResponse> | GetLineEnergyDataResponse;
 }
 
 export function EnergyRecordServiceControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ["getEnergyConsumptionAndCost", "getEnergyConsumption"];
+    const grpcMethods: string[] = ["getEnergyConsumptionAndCost", "getEnergyConsumption", "getLineEnergyData"];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
       GrpcMethod("EnergyRecordService", method)(constructor.prototype[method], method, descriptor);

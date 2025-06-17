@@ -28,4 +28,13 @@ export class EnergyController {
         };
         return await this.energyService.getEnergyConsumption(request);
     }
+
+    @Get("line-data")
+    @UseGuards(JwtAuthGuard)
+    async getLineEnergyData(@CurrentUser() user) {
+        const request: EnergyITF.GetLineEnergyDataRequest = {
+            userId: user.id,
+        };
+        return await this.energyService.getLineEnergyData(request);
+    }
 }

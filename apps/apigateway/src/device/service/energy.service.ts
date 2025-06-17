@@ -21,4 +21,9 @@ export class EnergyService implements OnModuleInit {
         const response = await firstValueFrom(this.energyService.getEnergyConsumption(request));
         return handleMicroserviceResponse(response);
     }
+
+    async getLineEnergyData (request: EnergyITF.GetLineEnergyDataRequest) {
+        const response = await firstValueFrom(this.energyService.getLineEnergyData(request));
+        return handleMicroserviceResponse(response);
+    }
 }

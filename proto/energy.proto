@@ -9,6 +9,9 @@ service EnergyRecordService {
     
     // Get energy consumption by time period (daily/monthly)
     rpc GetEnergyConsumption (GetTimeEnergyConsumptionRequest) returns (GetTimeEnergyConsumptionResponse);
+    
+    // Get current energy data for all lines
+    rpc GetLineEnergyData (GetLineEnergyDataRequest) returns (GetLineEnergyDataResponse);
 }
 
 // Request to get energy consumption and cost
@@ -23,6 +26,11 @@ message GetTimeEnergyConsumptionRequest {
     string view_type = 3; // 'daily' or 'monthly'
 }
 
+// Request to get current line energy data
+message GetLineEnergyDataRequest {
+    string user_id = 1;
+}
+
 // Response containing energy consumption and cost data
 message GetEnergyConsumptionResponse {
     StatusMessage status = 1;
@@ -33,6 +41,28 @@ message GetEnergyConsumptionResponse {
 message GetTimeEnergyConsumptionResponse {
     StatusMessage status = 1;
     optional TimeConsumptionResult data = 2;
+}
+
+// Response for current line energy data
+message GetLineEnergyDataResponse {
+    StatusMessage status = 1;
+    repeated LineCurrentEnergyData data = 2;
+}
+
+// Current energy data for a single line
+message LineCurrentEnergyData {
+    string line_code = 1;
+    string line_name = 2;
+    optional string room_id = 3;
+    optional string room_name = 4;
+    optional string floor_id = 5;
+    optional string floor_name = 6;
+    optional double voltage = 7;  // U (V)
+    optional double current = 8;  // I (A)
+    optional double power = 9;    // P (W)
+    optional double energy = 10;  // E (kWh)
+    string record_time = 11;      // ISO string format
+    bool is_current_hour = 12;    // true if data is from current hour
 }
 
 // Time-based consumption result

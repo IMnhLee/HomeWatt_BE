@@ -57,4 +57,26 @@ export class EnergyRecordController implements EnergyITF.EnergyRecordServiceCont
             };
         }
     }
+
+    async getLineEnergyData (request: EnergyITF.GetLineEnergyDataRequest): Promise<EnergyITF.GetLineEnergyDataResponse> {
+        try {
+            const response = await this.consumptionService.getLineEnergyData(request.userId);
+            return {
+                status: {
+                    code: 200,
+                    message: 'Get line energy data success',
+                },
+                data: response,
+            };
+        } catch (error) {
+            return {
+                status: {
+                    code: error.status || 500,
+                    message: error.message,
+                    error: error.error || 'Internal Server Error',
+                },
+                data: [],
+            };
+        }
+    }
 }

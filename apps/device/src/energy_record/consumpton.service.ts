@@ -18,6 +18,21 @@ interface EnergyConsumptionData {
   totalsByTime: number[];
 }
 
+interface LineCurrentEnergyData {
+    lineCode: string;
+    lineName: string;
+    roomId?: string;
+    roomName?: string;
+    floorId?: string;
+    floorName?: string;
+    voltage: number | undefined; // U (V)
+    current: number | undefined; // I (A)
+    power: number | undefined;   // P (W)
+    energy: number | undefined;  // E (kWh)
+    recordTime: string;     // Thời gian record (ISO string)
+    isCurrentHour: boolean; // Dữ liệu có phải là của giờ hiện tại không
+}
+
 @Injectable()
 export class ConsumptionService {
     private readonly logger = new Logger(ConsumptionService.name);
@@ -178,5 +193,151 @@ export class ConsumptionService {
             lines: lineData,
             totalsByTime
         };
+    }
+
+    async getLineEnergyData(userId: string): Promise<LineCurrentEnergyData[]> { 
+        // Get all active lines for the user with room and floor relations
+        const monitorings = await this.monitoringRepository.findByUserIdWithRelations(userId);
+        const activeLines = monitorings
+            .flatMap(m => m.lines)
+            .filter(line => line.active);
+        
+        if (activeLines.length === 0) {
+            return [];
+        }
+        
+        // Create a mapping for line details including room and floor
+        const lineDetails: { 
+            [key: string]: { 
+                name: string, 
+                roomId?: string,
+                roomName?: string,
+                floorId?: string,
+                floorName?: string
+            }
+        } = {};
+        
+        activeLines.forEach(line => {
+            lineDetails[line.code] = {
+                name: line.name || line.code,
+                roomId: line.room?.id,
+                roomName: line.room?.name,
+                floorId: line.room?.floor?.id,
+                floorName: line.room?.floor?.name
+            };
+        });
+        
+        const lineCodes = activeLines.map(line => line.code);
+        
+        // Calculate current hour (round down to hour)
+        const now = moment().utcOffset('+07:00');
+        const currentHour = now.clone().startOf('hour');
+        const currentHourUTC = currentHour.clone().subtract(7, 'hours').toDate();
+        
+        // Define search range: from current hour to next hour
+        const nextHour = currentHour.clone().add(1, 'hour');
+        const nextHourUTC = nextHour.clone().subtract(7, 'hours').toDate();
+        
+        // Get energy records for current hour
+        const energyRecords = await this.energyRecordRepository.findWithOptions({
+            where: {
+                lineCode: In(lineCodes),
+                date: Between(currentHourUTC, nextHourUTC)
+            }
+        });
+        
+        // Group records by line code and find the best record for each line
+        const recordsByLine: { [lineCode: string]: any } = {};
+        
+        energyRecords.forEach(record => {
+            const recordMoment = moment(record.date).utcOffset('+07:00');
+            const recordHour = recordMoment.format('YYYY-MM-DD HH');
+            const targetHour = currentHour.format('YYYY-MM-DD HH');
+            
+            // Check if this record is for the current hour
+            const isCurrentHourRecord = recordHour === targetHour;
+            
+            if (!recordsByLine[record.lineCode] || 
+                (isCurrentHourRecord && !recordsByLine[record.lineCode].isCurrentHour) ||
+                (isCurrentHourRecord === recordsByLine[record.lineCode].isCurrentHour && 
+                 Math.abs(recordMoment.diff(currentHour)) < Math.abs(moment(recordsByLine[record.lineCode].date).utcOffset('+07:00').diff(currentHour)))) {
+                
+                recordsByLine[record.lineCode] = {
+                    ...record,
+                    isCurrentHour: isCurrentHourRecord
+                };
+            }
+        });
+        
+        // If no records found for current hour, try to get the most recent record for each line
+        for (const lineCode of lineCodes) {
+            if (!recordsByLine[lineCode]) {
+                // Get the most recent record before current time
+                const recentRecord = await this.energyRecordRepository.findWithOptions({
+                    where: {
+                        lineCode: lineCode,
+                    },
+                    order: {
+                        date: 'DESC'
+                    },
+                    take: 1
+                });
+                
+                if (recentRecord && recentRecord.length > 0) {
+                    const record = recentRecord[0];
+                    const recordMoment = moment(record.date).utcOffset('+07:00');
+                    
+                    recordsByLine[lineCode] = {
+                        ...record,
+                        isCurrentHour: recordMoment.isSame(currentHour, 'hour')
+                    };
+                }
+            }
+        }
+        
+        // Prepare response data
+        const result: LineCurrentEnergyData[] = lineCodes.map(lineCode => {
+            const record = recordsByLine[lineCode];
+            const details = lineDetails[lineCode];
+            
+            if (record) {
+                const recordMoment = moment(record.date).utcOffset('+07:00');
+                
+                return {
+                    lineCode,
+                    lineName: details.name,
+                    roomId: details.roomId,
+                    roomName: details.roomName,
+                    floorId: details.floorId,
+                    floorName: details.floorName,
+                    voltage: record.voltage ? Number(record.voltage) : undefined,
+                    current: record.current ? Number(record.current) : undefined,
+                    power: record.power ? Number(record.power) : undefined,
+                    energy: record.energy ? Number(record.energy) : undefined,
+                    recordTime: recordMoment.format('YYYY-MM-DDTHH:mm:ss+07:00'),
+                    isCurrentHour: record.isCurrentHour || false
+                };
+            } else {
+                // No data available for this line
+                return {
+                    lineCode,
+                    lineName: details.name,
+                    roomId: details.roomId,
+                    roomName: details.roomName,
+                    floorId: details.floorId,
+                    floorName: details.floorName,
+                    voltage: undefined,
+                    current: undefined,
+                    power: undefined,
+                    energy: undefined,
+                    recordTime: currentHour.format('YYYY-MM-DDTHH:mm:ss+07:00'),
+                    isCurrentHour: false
+                };
+            }
+        });
+        
+        this.logger.log(`Retrieved current energy data for ${result.length} lines at ${currentHour.format('YYYY-MM-DD HH:mm:ss')}`);
+        
+        return result;
     }
 }
