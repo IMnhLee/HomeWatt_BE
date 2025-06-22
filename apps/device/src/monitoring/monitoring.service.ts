@@ -37,6 +37,9 @@ export class MonitoringService {
       if (!monitoring) {
         throw new NotFoundException('Monitoring not found');
       }
+      else if (monitoring.userId) {
+        throw new BadRequestException('Monitoring already assigned to a user');
+      }
     try {
       const response = await this.monitoringRepository.update(monitoring.id, {
         userId: userId,

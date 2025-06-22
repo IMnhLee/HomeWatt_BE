@@ -1,7 +1,7 @@
 import { Controller } from "@nestjs/common";
 import { EnergyRecordService } from "./energy_record.service";
 import { EnergyITF } from "@app/common";
-import { ConsumptionService } from "./consumpton.service";
+import { ConsumptionService } from "./consumption.service";
 
 @Controller()
 @EnergyITF.EnergyRecordServiceControllerMethods()

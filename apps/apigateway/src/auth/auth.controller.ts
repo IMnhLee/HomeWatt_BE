@@ -40,14 +40,15 @@ export class AuthController {
 
   @Public()
   @UseGuards(GoogleTokenGuard)
-  @Post('google/token')
+  @Post('google-login')
   async googleToken(@Req() req) {
+    if (!req.user) {
+      throw new UnauthorizedException('Authentication failed');
+    }
+    
     return {
-      status: {
-        code: 200,
-        message: 'Google authentication successful',
-      },
-      data: req.user, // GoogleTokenGuard đã xác thực và gắn data vào req.user
+      message: 'Google authentication successful',
+      data: req.user,
     };
   }
 

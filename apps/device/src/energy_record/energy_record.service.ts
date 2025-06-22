@@ -4,7 +4,7 @@ import { MonitoringRepository } from "../monitoring/monitoring.repository";
 import { SettingRepository } from "../setting/setting.repository";
 import { RedisService } from "./redis/redis.service";
 import { PriceType } from "../entities/setting.entity";
-import { Repository, In, MoreThanOrEqual } from "typeorm";
+import { Repository, In, MoreThanOrEqual, Between } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 import { OnePriceConfig } from "../entities/one-price-config.entity";
 import { PercentPriceConfig } from "../entities/percent-price-config.entity";
@@ -64,7 +64,6 @@ export class EnergyRecordService {
             .hour(0)
             .minute(0)
             .second(0)
-            .utcOffset('+07:00');
         
         // If today is before the billing start day of the current month,
         // we need to use the billing start day from the previous month
@@ -99,15 +98,15 @@ export class EnergyRecordService {
         });
 
         // Get energy records for the billing period
-        // Adjust the billingStartDate for the database query by subtracting 7 hours
-        // This compensates for the timezone difference when the Date is interpreted as UTC by the database
-        const billingStartDateForQuery = moment(billingStartDate)
-            .toDate();
+        // Convert to database format (YYYY-MM-DD HH:mm:ss) without timezone adjustment
+        const billingStartDateForQuery = new Date(billingStartDate.format('YYYY-MM-DD HH:mm:ss'));
+        const todayForQuery = new Date(today.format('YYYY-MM-DD HH:mm:ss'));
 
+        console.log("Billing Start Date:", billingStartDateForQuery, "Today:", todayForQuery);
         const energyRecords = await this.energyRecordRepository.findWithOptions({
             where: {
                 lineCode: In(lineCodes),
-                date: MoreThanOrEqual(billingStartDateForQuery)
+                date: Between(billingStartDateForQuery, todayForQuery)
             }
         });
 
@@ -235,68 +234,81 @@ export class EnergyRecordService {
         }
 
         // Prepare chart data
-        const diffInHours = billingStartDate.diff(today, 'hours');
-        // Always show by hour if less than 24 hours, but treat as a full day for completeness
-        const displayByHour = Math.abs(diffInHours) <= 24;
+        const diffInHours = Math.abs(billingStartDate.diff(today, 'hours'));
+        const displayByHour = diffInHours <= 24;
         
-        // Create a complete timeline from billing start to current time
-        const chartData: ChartDataPoint[] = [];
+        // Generate time slots from actual record dates instead of creating all possible slots
+        const uniqueTimeGroups = new Set<string>();
+        const groupByFormat = displayByHour ? 'YYYY-MM-DD HH' : 'YYYY-MM-DD';
         
-        // Create time slots for the complete timeline
-        const timeSlots: { key: string, timestamp: number }[] = [];
-        // Use moment object instead of JavaScript Date to maintain timezone info
-        let currentDate = moment(billingStartDate).utcOffset('+07:00');
+        energyRecords.forEach(record => {
+            const recordMoment = moment(record.date);
+            const timeGroup = recordMoment.format(groupByFormat);
+            uniqueTimeGroups.add(timeGroup);
+        });
         
-        if (displayByHour) {
-            // Generate hourly slots from billing start to now
-            while (currentDate.isSameOrBefore(today)) {
-                const timeKey = currentDate.format('YYYY-MM-DD HH:00');
-                timeSlots.push({
-                    key: timeKey,
-                    timestamp: currentDate.valueOf() // Use valueOf instead of getTime()
-                });
-                currentDate = currentDate.clone().add(1, 'hour');
+        // Convert to sorted array and create time slots
+        const sortedTimeGroups = Array.from(uniqueTimeGroups).sort();
+        const timeSlots: { key: string, group: string, timestamp: number }[] = sortedTimeGroups.map(group => {
+            let key: string;
+            let timestamp: number;
+            
+            if (displayByHour) {
+                // Convert from "YYYY-MM-DD HH" to "YYYY-MM-DDTHH:00:00"
+                const [datePart, hourPart] = group.split(' ');
+                key = `${datePart}T${hourPart.padStart(2, '0')}:00:00`;
+                const momentTime = moment(`${datePart} ${hourPart}:00:00`, 'YYYY-MM-DD HH:mm:ss');
+                timestamp = momentTime.valueOf();
+            } else {
+                key = group; // group is already in YYYY-MM-DD format
+                const momentTime = moment(group, 'YYYY-MM-DD');
+                timestamp = momentTime.valueOf();
             }
-        } else {
-            // Generate daily slots from billing start to now
-            while (currentDate.isSameOrBefore(today)) {
-                const timeKey = currentDate.format('YYYY-MM-DD');
-                timeSlots.push({
-                    key: timeKey,
-                    timestamp: currentDate.valueOf() // Use valueOf instead of getTime()
-                });
-                currentDate = currentDate.clone().add(1, 'day');
-            }
+            
+            return {
+                key,
+                group,
+                timestamp
+            };
+        });
+        
+        // If no records found, return empty result
+        if (timeSlots.length === 0) {
+            return {
+                totalEnergy,
+                totalCost,
+                currentPrice,
+                chartData: [],
+                lineNames,
+                lineCosts,
+                lineEnergy,
+                displayByHour
+            };
         }
         
-        // Initialize record data for all time slots with zeros
-        const recordsByTime: { [timeKey: string]: { [lineCode: string]: number } } = {};
+        // Initialize data structure
+        const recordsByTime: { [timeGroup: string]: { [lineCode: string]: number } } = {};
         timeSlots.forEach(slot => {
-            recordsByTime[slot.key] = {};
+            recordsByTime[slot.group] = {};
             lineCodes.forEach(code => {
-                recordsByTime[slot.key][code] = 0;
+                recordsByTime[slot.group][code] = 0;
             });
         });
         
-        // Fill in actual energy data where available
+        // Fill in actual energy data
         energyRecords.forEach(record => {
-            const recordDate = moment(record.date).utcOffset('+07:00');
+            const recordMoment = moment(record.date);
+            const timeGroup = recordMoment.format(groupByFormat);
             
-            let timeKey;
-            if (displayByHour) {
-                timeKey = recordDate.format('YYYY-MM-DD HH:00');
-            } else {
-                timeKey = recordDate.format('YYYY-MM-DD');
-            }
-            
-            if (recordsByTime[timeKey]) {
-                recordsByTime[timeKey][record.lineCode] += Number(record.energy);
+            if (recordsByTime[timeGroup]) {
+                recordsByTime[timeGroup][record.lineCode] = 
+                    (recordsByTime[timeGroup][record.lineCode] || 0) + Number(record.energy);
             }
         });
         
         // Create chart data points with costs for each time slot
-        timeSlots.forEach(slot => {
-            const timePointData = recordsByTime[slot.key];
+        const chartData: ChartDataPoint[] = timeSlots.map(slot => {
+            const timePointData = recordsByTime[slot.group];
             const totalEnergyForTimePoint = Object.values(timePointData)
                 .reduce((sum, energy) => sum + Number(energy), 0);
                 
@@ -316,21 +328,15 @@ export class EnergyRecordService {
                 timePointCosts[lineCode] = lineCosts[lineCode] * ratio;
                 totalCostForTimePoint += timePointCosts[lineCode];
             });
-            
-            // Create a proper date object for the timestamp with GMT+7 timezone
-            const date = moment(slot.timestamp)
-            
-            // Format into ISO string format which matches JavaScript Date format
-            const formattedLabel = date.format('YYYY-MM-DDTHH:mm:ssZ');
                 
-            chartData.push({
-                label: formattedLabel,
+            return {
+                label: slot.key,
                 timestamp: slot.timestamp,
                 data: timePointData,
                 costs: timePointCosts,
                 totalEnergy: totalEnergyForTimePoint,
                 totalCost: totalCostForTimePoint
-            });
+            };
         });
 
         return {
@@ -341,7 +347,7 @@ export class EnergyRecordService {
             lineNames,
             lineCosts,
             lineEnergy,
-            displayByHour // Added to inform frontend about display mode
+            displayByHour
         };
     }
 }

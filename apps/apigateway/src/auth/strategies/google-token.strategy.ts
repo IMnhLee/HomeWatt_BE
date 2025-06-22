@@ -21,14 +21,13 @@ export class GoogleTokenStrategy extends PassportStrategy(Strategy, 'google-toke
 
     // Gọi service để xác thực token với Google
     const response = await this.authService.validateGoogleToken({ token });
+    console.log('Google token validation response:', response);
     
     if (!response) {
       throw new UnauthorizedException('Invalid Google token');
     }
     
     // Trả về thông tin token để đính kèm vào request
-    return {
-      ...response,
-    };
+    return response.data
   }
 }

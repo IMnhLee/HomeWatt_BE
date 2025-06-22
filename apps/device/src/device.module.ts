@@ -34,7 +34,7 @@ import { EnergyRecord } from './entities/energy-record.entity';
 import { EnergyRecordController } from './energy_record/energy_record.controller';
 import { EnergyRecordService } from './energy_record/energy_record.service';
 import { EnergyRecordRepository } from './energy_record/energy_record.repository';
-import { ConsumptionService } from './energy_record/consumpton.service';
+import { ConsumptionService } from './energy_record/consumption.service';
 
 @Module({
   imports: [

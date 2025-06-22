@@ -187,6 +187,7 @@ export class AuthService {
       });
       
       const payload = ticket.getPayload();
+      console.log('Google token payload:', payload);
       if (!payload || !payload.email) {
         return {
           status: {
@@ -200,7 +201,8 @@ export class AuthService {
       let user;
       
       try {
-        user = await this.userService.GetUserByEmail({ email: payload.email });
+        const response = await this.userService.GetUserByEmail({ email: payload.email });
+        user = response.data;
       } catch (err) {
         // User doesn't exist, create a new one
         user = await this.userService.CreateUser({
@@ -213,7 +215,6 @@ export class AuthService {
       
       // Generate tokens
       const tokens = await this.generateTokens(user);
-      
       return {
         status: {
           code: 200,

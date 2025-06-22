@@ -48,8 +48,7 @@ export class ConsumptionService {
         viewType: 'daily' | 'monthly'
     ): Promise<EnergyConsumptionData> {
         // Parse the input date
-        const targetDate = moment(date).utcOffset('+07:00');
-        
+        const targetDate = moment(date);
         // Define start and end dates based on view type
         let startDate: moment.Moment;
         let endDate: moment.Moment;
@@ -59,21 +58,27 @@ export class ConsumptionService {
         if (viewType === 'monthly') {
             // For monthly view, get the whole month
             startDate = moment(targetDate).startOf('month');
-            endDate = moment(targetDate).endOf('month');
+            // For monthly view, set end date to today if it's the current month
+            // otherwise set it to the end of the month
+            endDate = moment().isSame(targetDate, 'month') 
+                ? moment().utcOffset('+07:00')
+                : moment(targetDate).endOf('month').subtract(1, 'day')
             timeFormat = 'YYYY-MM-DD';
             groupByFormat = 'YYYY-MM-DD';
         } else {
             // For daily view, get the whole day
             startDate = moment(targetDate).startOf('day');
-            endDate = moment(targetDate).endOf('day');
+            endDate = moment().isSame(targetDate, 'day')
+                ? moment().utcOffset('+07:00')
+                : moment(targetDate).endOf('day');
             timeFormat = 'YYYY-MM-DDTHH:00:00'; // Include full ISO date format with hour
             groupByFormat = 'YYYY-MM-DD HH';
         }
-        
-        // Adjust for timezone in database queries
-        const startDateForQuery = startDate.clone().subtract(7, 'hours').toDate();
-        const endDateForQuery = endDate.clone().subtract(7, 'hours').toDate();
-        
+
+        // Convert to database format (YYYY-MM-DD HH:mm:ss) without timezone adjustment
+        const startDateForQuery = new Date(startDate.format('YYYY-MM-DD HH:mm:ss'));
+        const endDateForQuery = new Date(endDate.format('YYYY-MM-DD HH:mm:ss'));
+
         // Get all active lines for the user with room and floor relations
         const monitorings = await this.monitoringRepository.findByUserIdWithRelations(userId);
         const activeLines = monitorings
@@ -110,6 +115,8 @@ export class ConsumptionService {
             };
         });
         
+        console.log(startDateForQuery, endDateForQuery)
+
         // Get energy records for the specified time period
         const energyRecords = await this.energyRecordRepository.findWithOptions({
             where: {
@@ -117,29 +124,41 @@ export class ConsumptionService {
                 date: Between(startDateForQuery, endDateForQuery)
             }
         });
+
+        // Generate time slots from actual record dates instead of creating all possible slots
+        const uniqueTimeGroups = new Set<string>();
         
-        // Generate all time slots within the range
-        const timeSlots: { key: string, group: string }[] = [];
-        let currentSlot = startDate.clone();
+        energyRecords.forEach(record => {
+            const recordMoment = moment(record.date);
+            const timeGroup = recordMoment.format(groupByFormat);
+            uniqueTimeGroups.add(timeGroup);
+        });
         
-        if (viewType === 'monthly') {
-            // Generate all days in the month
-            while (currentSlot.isSameOrBefore(endDate)) {
-                timeSlots.push({
-                    key: currentSlot.format(timeFormat),
-                    group: currentSlot.format(groupByFormat)
-                });
-                currentSlot.add(1, 'day');
+        // Convert to sorted array and create time slots
+        const sortedTimeGroups = Array.from(uniqueTimeGroups).sort();
+        const timeSlots: { key: string, group: string }[] = sortedTimeGroups.map(group => {
+            let key: string;
+            if (viewType === 'monthly') {
+                key = group; // group is already in YYYY-MM-DD format
+            } else {
+                // Convert from "YYYY-MM-DD HH" to "YYYY-MM-DDTHH:00:00"
+                const [datePart, hourPart] = group.split(' ');
+                key = `${datePart}T${hourPart.padStart(2, '0')}:00:00`;
             }
-        } else {
-            // Generate all hours in the day
-            while (currentSlot.isSameOrBefore(endDate)) {
-                timeSlots.push({
-                    key: currentSlot.format(timeFormat),
-                    group: currentSlot.format(groupByFormat)
-                });
-                currentSlot.add(1, 'hour');
-            }
+            
+            return {
+                key,
+                group
+            };
+        });
+        
+        // If no records found, return empty result
+        if (timeSlots.length === 0) {
+            return {
+                timeLabels: [],
+                lines: [],
+                totalsByTime: []
+            };
         }
         
         // Initialize data structure
@@ -153,7 +172,7 @@ export class ConsumptionService {
         
         // Fill in actual energy data
         energyRecords.forEach(record => {
-            const recordMoment = moment(record.date).utcOffset('+07:00');
+            const recordMoment = moment(record.date);
             const timeGroup = recordMoment.format(groupByFormat);
             
             if (energyByTime[timeGroup]) {
