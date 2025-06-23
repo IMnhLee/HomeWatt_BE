@@ -227,19 +227,21 @@ jobs:
                 - homewatt-network
 
             postgres:
-              image: postgres:15-alpine
+              image: postgres:latest
               environment:
                 - POSTGRES_USER=admin
                 - POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
                 - POSTGRES_DB=homewatt
               volumes:
                 - postgres-data:/var/lib/postgresql/data
+              ports:
+                - '5432:5432'
               restart: unless-stopped
               networks:
                 - homewatt-network
 
             redis:
-              image: redis:7-alpine
+              image: redis:latest
               command: redis-server --requirepass ${{ secrets.REDIS_PASSWORD }}
               environment:
                 - REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
