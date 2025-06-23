@@ -192,7 +192,6 @@ jobs:
               depends_on:
                 - identity
                 - redis
-              restart: unless-stopped
               networks:
                 - homewatt-network
 
