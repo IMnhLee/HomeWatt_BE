@@ -68,6 +68,82 @@ jobs:
 
       - name: Create deployment files
         run: |
+          # Create env directory and files
+          mkdir -p env
+          
+          # Create apigateway env file
+          cat > env/apigateway.env << 'EOF'
+          AUTH_GRPC_URL=auth:50052
+          IDENTITY_GRPC_URL=identity:50051
+          DEVICE_GRPC_URL=device:50054
+          PORT=3000
+          JWT_ACCESS_SECRET=${{ secrets.JWT_ACCESS_SECRET }}
+          GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_CALLBACK_URL=http://localhost:3000/auth/google/callback
+          EOF
+          
+          # Create identity env file
+          cat > env/identity.env << 'EOF'
+          DB_HOST=postgres
+          DB_PORT=5432
+          DB_NAME=homewatt
+          DB_USERNAME=admin
+          DB_DIALECT=postgres
+          DB_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          RABBIT_MQ_URI=amqp://admin:${{ secrets.RABBITMQ_PASSWORD }}@rabbitmq:5672
+          RABBIT_MQ_MAIL_QUEUE=mail_queue
+          EOF
+          
+          # Create auth env file
+          cat > env/auth.env << 'EOF'
+          IDENTITY_GRPC_URL=identity:50051
+          JWT_ACCESS_SECRET=${{ secrets.JWT_ACCESS_SECRET }}
+          JWT_ACCESS_EXPIRATION=${{ vars.JWT_ACCESS_EXPIRATION }}
+          JWT_ACCESS_EXPIRATION_SECONDS=${{ vars.JWT_ACCESS_EXPIRATION_SECONDS }}
+          JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}
+          JWT_REFRESH_EXPIRATION=${{ vars.JWT_REFRESH_EXPIRATION }}
+          JWT_REFRESH_EXPIRATION_SECONDS=${{ vars.JWT_REFRESH_EXPIRATION_SECONDS }}
+          REDIS_HOST=redis
+          REDIS_PORT=6379
+          REDIS_URL=redis://redis:6379
+          REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
+          GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_CALLBACK_URL=http://localhost:3000/auth/google/callback
+          EOF
+          
+          # Create device env file
+          cat > env/device.env << 'EOF'
+          IDENTITY_GRPC_URL=identity:50051
+          AUTH_GRPC_URL=auth:50052
+          DB_HOST=postgres
+          DB_PORT=5432
+          DB_DIALECT=postgres
+          DB_NAME=homewatt
+          DB_USERNAME=admin
+          DB_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          REDIS_HOST=redis
+          REDIS_PORT=6379
+          REDIS_URL=redis://redis:6379
+          REDIS_DB=${{ vars.REDIS_DEVICE_DB }}
+          REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
+          EOF
+          
+          # Create mail-sender env file
+          cat > env/mail-sender.env << 'EOF'
+          RABBIT_MQ_URI=amqp://admin:${{ secrets.RABBITMQ_PASSWORD }}@rabbitmq:5672
+          RABBIT_MQ_MAIL_QUEUE=mail_queue
+          MAIL_HOST=${{ vars.MAIL_HOST }}
+          MAIL_PORT=${{ vars.MAIL_PORT }}
+          MAIL_SECURE=false
+          MAIL_USER=${{ secrets.MAIL_USER }}
+          MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
+          MAIL_FROM_NAME=${{ vars.MAIL_FROM_NAME }}
+          MAIL_FROM_ADDRESS=${{ vars.MAIL_FROM_ADDRESS }}
+          FRONTEND_URL=${{ vars.FRONTEND_URL }}
+          EOF
+          
           # Create production docker-compose file
           cat > docker-compose.prod.yml << 'EOF'
           version: '3.8'
@@ -77,12 +153,10 @@ jobs:
               image: ${{ env.DOCKER_USERNAME }}/apigateway:latest
               ports:
                 - '3000:3000'
+              env_file:
+                - ./env/apigateway.env
               environment:
                 - NODE_ENV=production
-                - AUTH_GRPC_URL=auth:50052
-                - IDENTITY_GRPC_URL=identity:50051
-                - DEVICE_GRPC_URL=device:50054
-                - MAIL_SENDER_GRPC_URL=mail-sender:50053
               depends_on:
                 - auth
                 - identity
@@ -96,10 +170,10 @@ jobs:
               image: ${{ env.DOCKER_USERNAME }}/identity:latest
               ports:
                 - '50051:50051'
+              env_file:
+                - ./env/identity.env
               environment:
                 - NODE_ENV=production
-                - DB_HOST=postgres
-                - REDIS_HOST=redis
               depends_on:
                 - postgres
                 - redis
@@ -111,10 +185,10 @@ jobs:
               image: ${{ env.DOCKER_USERNAME }}/auth:latest
               ports:
                 - '50052:50052'
+              env_file:
+                - ./env/auth.env
               environment:
                 - NODE_ENV=production
-                - IDENTITY_GRPC_URL=identity:50051
-                - REDIS_HOST=redis
               depends_on:
                 - identity
                 - redis
@@ -126,11 +200,10 @@ jobs:
               image: ${{ env.DOCKER_USERNAME }}/device:latest
               ports:
                 - '50054:50054'
+              env_file:
+                - ./env/device.env
               environment:
                 - NODE_ENV=production
-                - IDENTITY_GRPC_URL=identity:50051
-                - AUTH_GRPC_URL=auth:50052
-                - DB_HOST=postgres
               depends_on:
                 - postgres
                 - identity
@@ -143,9 +216,10 @@ jobs:
               image: ${{ env.DOCKER_USERNAME }}/mail-sender:latest
               ports:
                 - '50053:50053'
+              env_file:
+                - ./env/mail-sender.env
               environment:
                 - NODE_ENV=production
-                - RABBIT_MQ_URI=amqp://rabbitmq:5672
               depends_on:
                 - rabbitmq
               restart: unless-stopped
@@ -166,6 +240,9 @@ jobs:
 
             redis:
               image: redis:7-alpine
+              command: redis-server --requirepass ${{ secrets.REDIS_PASSWORD }}
+              environment:
+                - REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
               volumes:
                 - redis-data:/data
               restart: unless-stopped
@@ -233,6 +310,16 @@ jobs:
           }
           EOF
 
+      - name: Copy deployment files to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          source: "docker-compose.prod.yml,nginx.conf,env/"
+          target: "~/app/homewatt-backend/"
+
       - name: Deploy to VPS via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -242,8 +329,8 @@ jobs:
           port: ${{ secrets.VPS_PORT || 22 }}
           script: |
             # Create application directory
-            mkdir -p ~/homewatt-backend
-            cd ~/homewatt-backend
+            mkdir -p ~/app/homewatt-backend
+            cd ~/app/homewatt-backend
 
             # Stop existing services
             docker-compose -f docker-compose.prod.yml down || true
@@ -267,16 +354,6 @@ jobs:
             # Check service status
             docker-compose -f docker-compose.prod.yml ps
 
-      - name: Copy deployment files to VPS
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT || 22 }}
-          source: "docker-compose.prod.yml,nginx.conf"
-          target: "~/homewatt-backend/"
-
       - name: Verify deployment
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -285,7 +362,7 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT || 22 }}
           script: |
-            cd ~/homewatt-backend
+            cd ~/app/homewatt-backend
             
             # Check if all services are running
             if docker-compose -f docker-compose.prod.yml ps | grep -q "Up"; then

@@ -131,15 +131,22 @@ services:
 
   redis:
     image: redis:latest
+    command: redis-server --requirepass adminnimda
     ports:
       - '6379:6379'
+    environment:
+      - REDIS_PASSWORD=adminnimda
     volumes:
       - redis-data:/data
 
   rabbitmq:
-    image: rabbitmq
+    image: rabbitmq:3-management
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=adminnimda
     ports:
       - '5672:5672'
+      - '15672:15672'  # Management UI
       
 volumes:
   postgres-data:
