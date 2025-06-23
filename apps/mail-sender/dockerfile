@@ -14,7 +14,7 @@ RUN npm install
 COPY . .
 
 # Build dự án
-RUN npm run build identity
+RUN npm run build mail-sender
 
 # Giai đoạn production dùng node alpine là nhẹ
 FROM node:alpine As production
