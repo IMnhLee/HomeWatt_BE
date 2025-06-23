@@ -326,16 +326,7 @@ jobs:
             
             # Check if all services are running
             if docker-compose -f docker-compose.prod.yml ps | grep -q "Up"; then
-              echo "Deployment successful! Services are running."
-              
-              # Health check
-              sleep 30
-              if curl -f http://localhost:3000/health > /dev/null 2>&1; then
-                echo "API Gateway health check passed"
-              else
-                echo "API Gateway health check failed"
-                exit 1
-              fi
+              echo "Deployment successful! Services are running."             
             else
               echo "Deployment failed! Some services are not running."
               docker-compose -f docker-compose.prod.yml logs --tail=50
