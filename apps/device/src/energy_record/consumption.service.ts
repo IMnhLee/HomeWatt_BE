@@ -60,7 +60,7 @@ export class ConsumptionService {
             startDate = moment(targetDate).startOf('month');
             // For monthly view, set end date to today if it's the current month
             // otherwise set it to the end of the month
-            endDate = moment().isSame(targetDate, 'month') 
+            endDate = moment().utcOffset('+07:00').isSame(targetDate, 'month') 
                 ? moment().utcOffset('+07:00')
                 : moment(targetDate).endOf('month').subtract(1, 'day')
             timeFormat = 'YYYY-MM-DD';
@@ -68,7 +68,7 @@ export class ConsumptionService {
         } else {
             // For daily view, get the whole day
             startDate = moment(targetDate).startOf('day');
-            endDate = moment().isSame(targetDate, 'day')
+            endDate = moment().utcOffset('+07:00').isSame(targetDate, 'day')
                 ? moment().utcOffset('+07:00')
                 : moment(targetDate).endOf('day');
             timeFormat = 'YYYY-MM-DDTHH:00:00'; // Include full ISO date format with hour
@@ -78,6 +78,7 @@ export class ConsumptionService {
         // Convert to database format (YYYY-MM-DD HH:mm:ss) without timezone adjustment
         const startDateForQuery = new Date(startDate.format('YYYY-MM-DD HH:mm:ss'));
         const endDateForQuery = new Date(endDate.format('YYYY-MM-DD HH:mm:ss'));
+        console.log(startDateForQuery, endDateForQuery)
 
         // Get all active lines for the user with room and floor relations
         const monitorings = await this.monitoringRepository.findByUserIdWithRelations(userId);
@@ -115,7 +116,6 @@ export class ConsumptionService {
             };
         });
         
-        console.log(startDateForQuery, endDateForQuery)
 
         // Get energy records for the specified time period
         const energyRecords = await this.energyRecordRepository.findWithOptions({
