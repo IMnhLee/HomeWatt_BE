@@ -20,7 +20,11 @@ async function bootstrap() {
   
   // CORS
   app.enableCors({
-    origin: process.env.CLIENT_URL || 'http://meizu1908.id.vn',
+    origin: [
+      process.env.CLIENT_URL || 'http://meizu1908.id.vn',
+      'http://localhost:5173',
+      'http://localhost:4173',
+    ],
     credentials: true,
   });
   
