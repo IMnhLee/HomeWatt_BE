@@ -94,7 +94,7 @@ export class LineService {
             const response = await this.lineRepository.update(line.id, {
                 roomId: null as unknown as string,
                 name: null as unknown as string,
-                active: false,
+                // active: false,
             })
             return response
         }
