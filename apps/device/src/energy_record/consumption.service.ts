@@ -48,7 +48,7 @@ export class ConsumptionService {
         viewType: 'daily' | 'monthly'
     ): Promise<EnergyConsumptionData> {
         // Parse the input date
-        const targetDate = moment(date).utcOffset('+07:00');
+        const targetDate = moment(date).subtract(7, 'hours').utcOffset('+07:00');
         // Define start and end dates based on view type
         let startDate: moment.Moment;
         let endDate: moment.Moment;
