@@ -166,6 +166,14 @@ export class UserController implements UserDTO.UserServiceController {
   async validateUser({ email, password }): Promise<UserDTO.ValidateUserResponse> {
     try {
       const user = await this.userService.findOneByEmail({email});
+      if (user.active === false) {
+        return {
+          status: {
+            code: 403,
+            message: 'User is inactive',
+          },
+        };
+      }
       await this.userService.validatePassword(user, password);
       // Loại bỏ password
       const { password: _, ...userWithoutPassword } = user;

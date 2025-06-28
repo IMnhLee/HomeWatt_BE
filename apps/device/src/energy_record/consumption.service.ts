@@ -78,7 +78,7 @@ export class ConsumptionService {
         // Convert to database format (YYYY-MM-DD HH:mm:ss) without timezone adjustment
         const startDateForQuery = new Date(startDate.format('YYYY-MM-DD HH:mm:ss'));
         const endDateForQuery = new Date(endDate.format('YYYY-MM-DD HH:mm:ss'));
-        console.log(startDateForQuery, endDateForQuery)
+        console.log(startDateForQuery, endDateForQuery, moment().utcOffset('+07:00'), targetDate, moment().utcOffset('+07:00').isSame(targetDate, 'day'));
 
         // Get all active lines for the user with room and floor relations
         const monitorings = await this.monitoringRepository.findByUserIdWithRelations(userId);
