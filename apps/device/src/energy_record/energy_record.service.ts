@@ -200,34 +200,43 @@ export class EnergyRecordService {
                 }
                 
                 // Calculate line costs proportionally to their energy consumption
+                // Object.keys(lineEnergy).forEach(lineCode => {
+                //     if (totalEnergy === 0) {
+                //         lineCosts[lineCode] = 0;
+                //         return;
+                //     }
+                    
+                //     const lineEnergyValue = lineEnergy[lineCode];
+                //     let lineCost = 0;
+                //     let lineRemainingEnergy = lineEnergyValue;
+                    
+                //     // Distribute the line's energy across stair price tiers proportionally
+                //     for (const stair of costByStair) {
+                //         // Calculate what proportion of this stair's energy belongs to this line
+                //         const linePortionOfStair = Math.min(
+                //             lineRemainingEnergy,
+                //             (lineEnergyValue / totalEnergy) * stair.energy
+                //         );
+                        
+                //         if (linePortionOfStair > 0) {
+                //             lineCost += linePortionOfStair * stair.price;
+                //             lineRemainingEnergy -= linePortionOfStair;
+                //         }
+                        
+                //         if (lineRemainingEnergy <= 0) {
+                //             break;
+                //         }
+                //     }
+                    
+                //     lineCosts[lineCode] = lineCost;
+                // });
                 Object.keys(lineEnergy).forEach(lineCode => {
                     if (totalEnergy === 0) {
                         lineCosts[lineCode] = 0;
                         return;
                     }
-                    
                     const lineEnergyValue = lineEnergy[lineCode];
-                    let lineCost = 0;
-                    let lineRemainingEnergy = lineEnergyValue;
-                    
-                    // Distribute the line's energy across stair price tiers proportionally
-                    for (const stair of costByStair) {
-                        // Calculate what proportion of this stair's energy belongs to this line
-                        const linePortionOfStair = Math.min(
-                            lineRemainingEnergy,
-                            (lineEnergyValue / totalEnergy) * stair.energy
-                        );
-                        
-                        if (linePortionOfStair > 0) {
-                            lineCost += linePortionOfStair * stair.price;
-                            lineRemainingEnergy -= linePortionOfStair;
-                        }
-                        
-                        if (lineRemainingEnergy <= 0) {
-                            break;
-                        }
-                    }
-                    
+                    let lineCost = lineEnergyValue * (totalCost / totalEnergy);
                     lineCosts[lineCode] = lineCost;
                 });
                 // Object.keys(lineEnergy).forEach(lineCode => {
