@@ -230,6 +230,15 @@ export class EnergyRecordService {
                     
                     lineCosts[lineCode] = lineCost;
                 });
+                // Object.keys(lineEnergy).forEach(lineCode => {
+                //     if (totalEnergy === 0) {
+                //         lineCosts[lineCode] = 0;
+                //         return;
+                //     }
+                //     const lineEnergyValue = lineEnergy[lineCode];
+                //     let lineCost = lineEnergyValue * (totalCost / totalEnergy);
+                //     lineCosts[lineCode] = lineCost;
+                // });
                 break;
         }
 
