@@ -51,6 +51,14 @@ export class AuthService {
         }
       };
     } catch (error) {
+      if (error.status === 403) {
+        return {
+          status: {
+            code: 403,
+            message: error.message,
+          }
+        };
+      }
       return {
         status: {
           code: 401,
@@ -203,6 +211,14 @@ export class AuthService {
       try {
         const response = await this.userService.GetUserByEmail({ email: payload.email });
         user = response.data;
+        if (!user.active) {
+          return {
+            status: {
+              code: 403,
+              message: 'User is inactive'
+            }
+          };
+        }
       } catch (err) {
         // User doesn't exist, create a new one
         user = await this.userService.CreateUser({
